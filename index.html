@@ -7,10 +7,11 @@
 <meta name="theme-color" content="#087b5a">
 <title>YOVAR — Smart Inventory</title>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
-:root{
+:root {
   --green:#087b5a;
   --dark:#07513e;
   --bg:#f3f7f5;
@@ -18,28 +19,28 @@
   --red:#d33d45;
   --orange:#d38a14;
 }
-*{box-sizing:border-box}
-body{
+* { box-sizing:border-box; }
+body {
   margin:0;
   font-family:Arial,system-ui,sans-serif;
   background:var(--bg);
   color:#17362b;
 }
-header{
+header {
   background:linear-gradient(120deg,#064c39,#09946c);
   padding:22px 16px;
   color:white;
 }
-header h1{margin:0;font-size:25px}
-header p{margin:7px 0 0;opacity:.85;font-size:13px}
-nav{
+header h1 { margin:0;font-size:25px; }
+header p { margin:7px 0 0;font-size:13px;opacity:.85; }
+nav {
   display:flex;
   gap:8px;
   padding:12px;
   background:white;
   overflow-x:auto;
 }
-nav button{
+nav button {
   padding:12px 16px;
   border:0;
   border-radius:12px;
@@ -47,12 +48,20 @@ nav button{
   color:#164734;
   font-weight:bold;
   white-space:nowrap;
+  cursor:pointer;
 }
-nav button.active{background:var(--green);color:white}
-main{max-width:850px;margin:auto;padding:17px}
-.page{display:none}
-.page.active{display:block}
-.card{
+nav button.active {
+  background:var(--green);
+  color:white;
+}
+main {
+  max-width:950px;
+  margin:auto;
+  padding:17px;
+}
+.page { display:none; }
+.page.active { display:block; }
+.card {
   background:white;
   padding:19px;
   border:1px solid var(--line);
@@ -60,17 +69,17 @@ main{max-width:850px;margin:auto;padding:17px}
   margin-bottom:15px;
   box-shadow:0 5px 20px #123d2810;
 }
-h2{font-size:21px;margin:0 0 12px}
-h3{font-size:16px}
-p{line-height:1.5}
-.muted{color:#70857a;font-size:13px}
-label{
+h2 { font-size:21px;margin:0 0 12px; }
+h3 { font-size:16px; }
+p { line-height:1.5; }
+.muted { color:#70857a;font-size:13px; }
+label {
   display:block;
   margin:14px 0 7px;
   font-weight:bold;
   font-size:14px;
 }
-input,select{
+input,select {
   display:block;
   width:100%;
   padding:13px;
@@ -79,8 +88,8 @@ input,select{
   background:white;
   font-size:16px;
 }
-button{cursor:pointer;font:inherit}
-.btn{
+button { cursor:pointer;font:inherit; }
+.btn {
   background:var(--green);
   color:white;
   border:0;
@@ -89,10 +98,13 @@ button{cursor:pointer;font:inherit}
   font-weight:bold;
   margin:7px 5px 5px 0;
 }
-.btn.secondary{background:#e6f2eb;color:var(--dark)}
-.btn.red{background:var(--red)}
-.btn:disabled{opacity:.55;cursor:wait}
-.status{
+.btn.secondary {
+  background:#e6f2eb;
+  color:var(--dark);
+}
+.btn.red { background:var(--red); }
+.btn:disabled { opacity:.55;cursor:wait; }
+.status {
   background:#e9f6ed;
   padding:13px;
   border-radius:12px;
@@ -100,34 +112,47 @@ button{cursor:pointer;font:inherit}
   font-size:14px;
   overflow-wrap:anywhere;
 }
-.status.error{background:#ffe9e9;color:#a6262e}
-.status.warn{background:#fff3d9;color:#8a5a0a}
-.stats{
+.status.error {
+  background:#ffe9e9;
+  color:#a6262e;
+}
+.status.warn {
+  background:#fff3d9;
+  color:#8a5a0a;
+}
+.stats {
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
 }
-.stat{
+.stat {
   padding:15px;
   border-radius:14px;
   background:white;
   border:1px solid var(--line);
 }
-.stat b{display:block;font-size:26px;margin-top:8px}
-.stat span{font-size:12px;color:#688075}
-.item{
+.stat b {
+  display:block;
+  font-size:26px;
+  margin-top:8px;
+}
+.stat span {
+  font-size:12px;
+  color:#688075;
+}
+.item {
   border:1px solid var(--line);
   padding:14px;
   border-radius:14px;
   margin:10px 0;
 }
-.row{
+.row {
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:10px;
 }
-.badge{
+.badge {
   display:inline-block;
   background:#e7f6ed;
   color:#087b5a;
@@ -136,9 +161,22 @@ button{cursor:pointer;font:inherit}
   font-size:12px;
   font-weight:bold;
 }
-.badge.warn{background:#fff0d4;color:#9d650b}
-.badge.bad{background:#ffe5e5;color:#c33636}
-#preview{
+.badge.warn {
+  background:#fff0d4;
+  color:#9d650b;
+}
+.badge.bad {
+  background:#ffe5e5;
+  color:#c33636;
+}
+#barcode-reader {
+  width:100%;
+  max-width:500px;
+  margin:12px auto;
+  border-radius:14px;
+  overflow:hidden;
+}
+#datePreview {
   display:none;
   width:100%;
   max-height:300px;
@@ -147,13 +185,7 @@ button{cursor:pointer;font:inherit}
   border-radius:14px;
   margin:12px 0;
 }
-#ocrCanvas{
-  display:none;
-  width:100%;
-  border-radius:12px;
-  margin:12px 0;
-}
-#ocrText{
+#ocrText {
   white-space:pre-wrap;
   overflow-wrap:anywhere;
   max-height:180px;
@@ -163,40 +195,40 @@ button{cursor:pointer;font:inherit}
   padding:12px;
   border-radius:12px;
 }
-.notice{
+.notice {
   background:#fff5df;
   padding:12px;
   border-radius:12px;
   font-size:13px;
 }
-.two{
+.two {
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
 }
-table{
+table {
   width:100%;
   border-collapse:collapse;
-  min-width:560px;
+  min-width:650px;
 }
-th,td{
+th,td {
   text-align:left;
   border-bottom:1px solid var(--line);
   padding:11px;
   font-size:13px;
 }
-.tablewrap{overflow-x:auto}
-footer{
+.tablewrap { overflow-x:auto; }
+footer {
   text-align:center;
   padding:25px;
   color:#81958a;
   font-size:12px;
 }
-@media(max-width:480px){
-  .stats{gap:7px}
-  .stat{padding:10px}
-  .stat b{font-size:22px}
-  .two{grid-template-columns:1fr}
+@media(max-width:600px) {
+  .two { grid-template-columns:1fr; }
+  .stats { gap:7px; }
+  .stat { padding:10px; }
+  .stat b { font-size:22px; }
 }
 </style>
 </head>
@@ -205,17 +237,17 @@ footer{
 
 <header>
   <h1>YOVAR — Smart Inventory</h1>
-  <p>Сканери муҳлати маҳсулот • Сабти худкор</p>
+  <p>Сканери штрихкод ва муҳлати маҳсулот</p>
 </header>
 
 <nav>
-  <button class="active" onclick="page('scan',this)">
+  <button class="active" onclick="showPage('scan',this)">
     📷 Сканер
   </button>
-  <button onclick="page('inventory',this)">
+  <button onclick="showPage('inventory',this)">
     📦 Анбор
   </button>
-  <button onclick="page('alerts',this)">
+  <button onclick="showPage('alerts',this)">
     ⏰ Муҳлат
   </button>
 </nav>
@@ -223,29 +255,44 @@ footer{
 <main>
 
 <section id="scan" class="page active">
+
   <div class="card">
-    <h2>Скан кардани муҳлати маҳсулот</h2>
+    <h2>1. Скан кардани штрихкод</h2>
+
     <p class="muted">
-      Танҳо қисми бастаро акс гиред, ки
-      EXP, Best Before ё Годен до навишта шудааст.
+      Камераро ба штрихкоди маҳсулот равона кунед.
     </p>
 
-    <label>Номи маҳсулот</label>
-    <input id="name" placeholder="Масалан: Шир 1 литр">
+    <div id="barcode-reader"></div>
 
-    <label>Штрихкод (ихтиёрӣ)</label>
-    <input id="barcode" placeholder="Рақами штрихкод">
+    <button class="btn" onclick="startBarcode()">
+      📷 Кушодани камера
+    </button>
 
-    <div class="two">
-      <div>
-        <label>Миқдор</label>
-        <input id="qty" type="number" min="1" value="1">
-      </div>
-      <div>
-        <label>Нарх (сомонӣ)</label>
-        <input id="price" type="number" min="0" step="0.01" value="0">
-      </div>
+    <button class="btn secondary" onclick="stopBarcode()">
+      Қатъ
+    </button>
+
+    <label>Акси штрихкод</label>
+    <input type="file"
+      accept="image/*"
+      onchange="scanBarcodeImage(this)">
+
+    <label>Штрихкод</label>
+    <input id="barcode"
+      placeholder="Рақами штрихкод">
+
+    <button class="btn secondary" onclick="lookupProduct()">
+      🔎 Ҷустуҷӯи ном
+    </button>
+
+    <div id="barcodeStatus" class="status">
+      Барои скан омода аст.
     </div>
+
+    <label>Номи маҳсулот</label>
+    <input id="name"
+      placeholder="Номи маҳсулот">
 
     <label>Филиал</label>
     <select id="branch">
@@ -254,48 +301,80 @@ footer{
       <option>Филиали 3</option>
     </select>
 
-    <label>📷 Бо камера акс гиред</label>
+    <div class="two">
+      <div>
+        <label>Миқдор (дона)</label>
+        <input id="qty"
+          type="number" min="1" value="1">
+      </div>
+
+      <div>
+        <label>Нарх (сомонӣ)</label>
+        <input id="price"
+          type="number" min="0"
+          step="0.01" value="0">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Скан кардани муҳлати маҳсулот</h2>
+
+    <p class="muted">
+      Танҳо қисми бастаро акс гиред, ки
+      EXP, Best Before ё Годен до навишта шудааст.
+    </p>
+
+    <label>📷 Акс бо камера</label>
     <input type="file"
       accept="image/*"
       capture="environment"
-      onchange="scanImage(this)">
+      onchange="scanExpiry(this)">
 
-    <label>🖼 Ё аксро интихоб кунед</label>
+    <label>🖼 Акс аз галерея</label>
     <input type="file"
       accept="image/*"
-      onchange="scanImage(this)">
+      onchange="scanExpiry(this)">
 
-    <img id="preview" alt="Акси маҳсулот">
-    <canvas id="ocrCanvas"></canvas>
+    <img id="datePreview" alt="Акси сана">
 
-    <div id="status" class="status">
-      Барои скан омода аст.
+    <div id="ocrStatus" class="status">
+      Барои хондани муҳлат омода аст.
     </div>
 
     <label>Санаи анҷоми муҳлат</label>
     <input id="expiry" type="date">
 
-    <button class="btn" id="saveBtn" onclick="saveManual()">
+    <button id="saveBtn"
+      class="btn"
+      onclick="saveProduct(false)">
       💾 Сабт дар анбор
     </button>
-    <button class="btn secondary" onclick="resetScan()">
+
+    <button class="btn secondary"
+      onclick="resetForm()">
       Тоза кардан
     </button>
 
     <div class="notice">
-      Агар барнома санаи EXP-ро бо эътимоди кофӣ ёбад,
-      сабт худкор иҷро мешавад. Барои санаҳои номуайян
-      тасдиқи дастӣ лозим аст.
+      Агар барнома санаи муҳлатро бо нишонаи
+      EXP ё Годен до муайян кунад, маҳсулот
+      худкор сабт мешавад. Агар сана номуайян
+      бошад, онро дастӣ тасдиқ кунед.
     </div>
 
     <details>
-      <summary>Нишон додани матни OCR</summary>
-      <div id="ocrText">Ҳоло матн нест.</div>
+      <summary>Матни хондашудаи OCR</summary>
+      <div id="ocrText">
+        Ҳоло матн нест.
+      </div>
     </details>
   </div>
+
 </section>
 
 <section id="inventory" class="page">
+
   <h2>Анбори маҳсулот</h2>
 
   <div class="stats">
@@ -303,18 +382,21 @@ footer{
       <span>Партияҳо</span>
       <b id="total">0</b>
     </div>
+
     <div class="stat">
       <span>То 7 рӯз</span>
       <b id="near">0</b>
     </div>
+
     <div class="stat">
-      <span>Гузашта</span>
+      <span>Муҳлат гузашта</span>
       <b id="expired">0</b>
     </div>
   </div>
 
   <div class="card">
-    <button class="btn secondary" onclick="exportCSV()">
+    <button class="btn secondary"
+      onclick="exportCSV()">
       ⬇ CSV
     </button>
 
@@ -323,6 +405,7 @@ footer{
         <thead>
           <tr>
             <th>Маҳсулот</th>
+            <th>Штрихкод</th>
             <th>Муҳлат</th>
             <th>Миқдор</th>
             <th>Филиал</th>
@@ -334,6 +417,7 @@ footer{
       </table>
     </div>
   </div>
+
 </section>
 
 <section id="alerts" class="page">
@@ -344,552 +428,984 @@ footer{
 </main>
 
 <footer>
-  YOVAR Smart Inventory • Версияи озмоишӣ
+  YOVAR Smart Inventory • Лоиҳаи озмоишӣ
 </footer>
 
 <script>
 "use strict";
 
-const KEY="yovar_expiry_only_v1";
-let inventory=[];
+/* =========================
+   STORAGE
+========================= */
 
-try{
-  inventory=JSON.parse(localStorage.getItem(KEY)||"[]");
-  if(!Array.isArray(inventory)) inventory=[];
-}catch(e){
-  inventory=[];
+const KEY = "yovar_inventory_combined_v1";
+
+let inventory = [];
+
+try {
+  inventory = JSON.parse(
+    localStorage.getItem(KEY) || "[]"
+  );
+
+  if (!Array.isArray(inventory)) {
+    inventory = [];
+  }
+} catch (e) {
+  inventory = [];
 }
 
-let processing=false;
-let imageURL=null;
+let scanner = null;
+let scannerBusy = false;
+let barcodeHandled = false;
+let processing = false;
+let imageURL = null;
 
-function el(id){
+function el(id) {
   return document.getElementById(id);
 }
 
-function value(id){
+function value(id) {
   return el(id).value.trim();
 }
 
-function setStatus(text,type=""){
-  el("status").textContent=text;
-  el("status").className="status "+type;
+function setBarcodeStatus(message) {
+  el("barcodeStatus").textContent = message;
 }
 
-function escapeHTML(s){
-  return String(s??"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
+function setOCRStatus(message, type = "") {
+  el("ocrStatus").textContent = message;
+  el("ocrStatus").className = "status " + type;
 }
 
-function page(id,button){
-  document.querySelectorAll(".page").forEach(
-    p=>p.classList.remove("active")
-  );
-  el(id).classList.add("active");
-
-  document.querySelectorAll("nav button").forEach(
-    b=>b.classList.remove("active")
-  );
-  button?.classList.add("active");
-
-  render();
+function escapeHTML(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
-function saveStorage(){
-  try{
-    localStorage.setItem(KEY,JSON.stringify(inventory));
+function saveStorage() {
+  try {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(inventory)
+    );
     return true;
-  }catch(e){
+  } catch (e) {
     alert("Сабт дар браузер имконнопазир аст.");
     return false;
   }
 }
 
-/* ===== DATE PARSER ===== */
+function showPage(id, button) {
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
+  });
 
-function isoDate(y,m,d){
-  y=Number(y);
-  m=Number(m);
-  d=Number(d);
+  el(id).classList.add("active");
 
-  if(y<100) y+=2000;
-  if(y<2020 || y>2100) return null;
+  document.querySelectorAll("nav button").forEach(b => {
+    b.classList.remove("active");
+  });
 
-  const date=new Date(y,m-1,d);
+  if (button) {
+    button.classList.add("active");
+  }
 
-  if(
-    date.getFullYear()!==y ||
-    date.getMonth()!==m-1 ||
-    date.getDate()!==d
-  ) return null;
+  if (id !== "scan") {
+    stopBarcode();
+  }
 
-  return [
-    String(y).padStart(4,"0"),
-    String(m).padStart(2,"0"),
-    String(d).padStart(2,"0")
-  ].join("-");
+  render();
 }
 
-function extractDates(text){
-  const found=[];
+/* =========================
+   BARCODE CAMERA
+========================= */
 
-  // YYYY.MM.DD
-  const a=/\b(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})\b/g;
+async function startBarcode() {
+  if (scannerBusy || scanner) return;
 
-  for(const m of text.matchAll(a)){
-    const date=isoDate(m[1],m[2],m[3]);
-    if(date){
-      found.push({
-        date,
-        index:m.index,
-        raw:m[0]
-      });
-    }
+  if (!window.isSecureContext) {
+    setBarcodeStatus(
+      "Барои камера HTTPS лозим аст."
+    );
+    return;
   }
 
-  // DD.MM.YYYY or DD.MM.YY
-  const b=/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/g;
-
-  for(const m of text.matchAll(b)){
-    const date=isoDate(m[3],m[2],m[1]);
-    if(date){
-      found.push({
-        date,
-        index:m.index,
-        raw:m[0]
-      });
-    }
+  if (typeof Html5Qrcode === "undefined") {
+    setBarcodeStatus(
+      "Китобхонаи сканер бор нашуд. Интернетро санҷед."
+    );
+    return;
   }
 
-  return found.filter((x,i,arr)=>
-    arr.findIndex(y=>y.index===x.index)===i
+  scannerBusy = true;
+  barcodeHandled = false;
+
+  setBarcodeStatus("Камера кушода мешавад...");
+
+  try {
+    const reader = new Html5Qrcode("barcode-reader");
+    scanner = reader;
+
+    await reader.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 240, height: 150 }
+      },
+      async decoded => {
+        if (barcodeHandled) return;
+
+        barcodeHandled = true;
+
+        el("barcode").value = decoded;
+
+        setBarcodeStatus(
+          "Штрихкод хонда шуд: " + decoded
+        );
+
+        await stopBarcode();
+        await lookupProduct();
+      },
+      () => {}
+    );
+
+    setBarcodeStatus(
+      "Камера фаъол аст. Штрихкодро нишон диҳед."
+    );
+  } catch (e) {
+    setBarcodeStatus(
+      "Камера кушода нашуд: " + e.message
+    );
+
+    try {
+      await scanner?.clear();
+    } catch (_) {}
+
+    scanner = null;
+  } finally {
+    scannerBusy = false;
+  }
+}
+
+async function stopBarcode() {
+  if (!scanner) return;
+
+  const current = scanner;
+  scanner = null;
+
+  try {
+    if (current.isScanning) {
+      await current.stop();
+    }
+
+    await current.clear();
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+/* =========================
+   BARCODE IMAGE
+========================= */
+
+async function scanBarcodeImage(input) {
+  const file = input.files?.[0];
+
+  if (!file) return;
+
+  await stopBarcode();
+
+  if (typeof Html5Qrcode === "undefined") {
+    setBarcodeStatus(
+      "Китобхонаи сканер дастрас нест."
+    );
+    return;
+  }
+
+  setBarcodeStatus(
+    "Акси штрихкод хонда мешавад..."
+  );
+
+  let reader = null;
+
+  try {
+    reader = new Html5Qrcode("barcode-reader");
+
+    const code = await reader.scanFile(
+      file,
+      true
+    );
+
+    el("barcode").value = code;
+
+    setBarcodeStatus(
+      "Штрихкод ёфт шуд: " + code
+    );
+
+    await lookupProduct();
+  } catch (e) {
+    setBarcodeStatus(
+      "Штрихкод хонда нашуд. Акси равшантар гиред."
+    );
+  } finally {
+    try {
+      await reader?.clear();
+    } catch (_) {}
+
+    input.value = "";
+  }
+}
+
+/* =========================
+   PRODUCT NAME LOOKUP
+========================= */
+
+async function lookupProduct() {
+  const code = value("barcode");
+
+  if (!code) {
+    setBarcodeStatus(
+      "Аввал штрихкодро ворид кунед."
+    );
+    return;
+  }
+
+  const known = inventory.find(
+    p => p.barcode === code
+  );
+
+  if (known) {
+    el("name").value = known.name;
+    el("price").value = known.price;
+
+    setBarcodeStatus(
+      "Маҳсулот аз анбор ёфт шуд: " +
+      known.name
+    );
+
+    return;
+  }
+
+  setBarcodeStatus(
+    "Номи маҳсулот ҷустуҷӯ мешавад..."
+  );
+
+  try {
+    const controller = new AbortController();
+
+    const timer = setTimeout(
+      () => controller.abort(),
+      8000
+    );
+
+    let response;
+
+    try {
+      response = await fetch(
+        "https://world.openfoodfacts.org/api/v2/product/" +
+        encodeURIComponent(code) +
+        ".json",
+        { signal: controller.signal }
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    const product = data.product || {};
+
+    const name =
+      product.product_name ||
+      product.product_name_ru ||
+      product.product_name_en ||
+      "";
+
+    if (data.status === 1 && name) {
+      el("name").value = name;
+
+      setBarcodeStatus(
+        "Номи маҳсулот ёфт шуд: " + name
+      );
+    } else {
+      setBarcodeStatus(
+        "Ном дар база нест. Номро як бор дастӣ нависед."
+      );
+    }
+  } catch (e) {
+    setBarcodeStatus(
+      "Ҷустуҷӯи онлайн дастрас нест. Номро дастӣ ворид кунед."
+    );
+  }
+}
+
+/* =========================
+   DATE FUNCTIONS
+========================= */
+
+function isoDate(y, m, d) {
+  y = Number(y);
+  m = Number(m);
+  d = Number(d);
+
+  if (y < 100) {
+    y += 2000;
+  }
+
+  if (y < 2020 || y > 2100) {
+    return null;
+  }
+
+  const date = new Date(y, m - 1, d);
+
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== m - 1 ||
+    date.getDate() !== d
+  ) {
+    return null;
+  }
+
+  return (
+    String(y).padStart(4, "0") + "-" +
+    String(m).padStart(2, "0") + "-" +
+    String(d).padStart(2, "0")
   );
 }
 
-function detectExpiry(text){
-  const lines=text.split(/\n/);
-  const keywords=
-    /\bEXP\b|EXPIR|BEST\s*BEFORE|USE\s*BY|BBE|ГОДЕН|ГОДНО|СРОК|ИСТЕКАЕТ|МУҲЛАТ/i;
+function extractDates(text) {
+  const found = [];
 
-  const manufacture=
-    /\bMFG\b|\bMFD\b|PRODUCTION|ИЗГОТ|ПРОИЗВЕД|ИСТЕҲСОЛ/i;
+  // 2027.12.31
+  const isoPattern =
+    /\b(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})\b/g;
 
-  const labeled=[];
+  for (const m of text.matchAll(isoPattern)) {
+    const date = isoDate(
+      m[1], m[2], m[3]
+    );
 
-  for(let i=0;i<lines.length;i++){
-    const line=lines[i];
-    if(!keywords.test(line)) continue;
-    if(manufacture.test(line)) continue;
-
-    // Check the same line and the following line.
-    const segment=line+" "+(lines[i+1]||"");
-    const dates=extractDates(segment);
-
-    for(const d of dates){
-      labeled.push(d.date);
+    if (date) {
+      found.push({
+        date,
+        index: m.index
+      });
     }
   }
 
-  const uniqueLabeled=[...new Set(labeled)];
+  // 31.12.2027 or 31/12/27
+  const europeanPattern =
+    /\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/g;
 
-  if(uniqueLabeled.length===1){
+  for (const m of text.matchAll(europeanPattern)) {
+    const date = isoDate(
+      m[3], m[2], m[1]
+    );
+
+    if (date) {
+      found.push({
+        date,
+        index: m.index
+      });
+    }
+  }
+
+  return found.filter((item, index, arr) => {
+    return arr.findIndex(
+      x => x.index === item.index
+    ) === index;
+  });
+}
+
+function detectExpiry(text) {
+  const lines = text.split(/\n/);
+
+  const expiryWords =
+    /\bEXP\b|EXPIR|BEST\s*BEFORE|USE\s*BY|\bBBE\b|ГОДЕН|ГОДНО|СРОК|ИСТЕКАЕТ|МУҲЛАТ/i;
+
+  const productionWords =
+    /\bMFG\b|\bMFD\b|PRODUCTION|ИЗГОТ|ПРОИЗВЕД|ИСТЕҲСОЛ/i;
+
+  const labeled = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!expiryWords.test(line)) {
+      continue;
+    }
+
+    if (productionWords.test(line)) {
+      continue;
+    }
+
+    const segment =
+      line + " " + (lines[i + 1] || "");
+
+    const dates = extractDates(segment);
+
+    dates.forEach(d => {
+      labeled.push(d.date);
+    });
+  }
+
+  const uniqueLabeled = [
+    ...new Set(labeled)
+  ];
+
+  if (uniqueLabeled.length === 1) {
     return {
-      date:uniqueLabeled[0],
-      confident:true,
-      reason:"Сана бо нишонаи EXP/Годен до ёфт шуд."
+      date: uniqueLabeled[0],
+      confident: true
     };
   }
 
-  if(uniqueLabeled.length>1){
-    return {
-      date:null,
-      confident:false,
-      reason:"Якчанд санаи муҳлат ёфт шуд."
-    };
-  }
+  const allDates = [
+    ...new Set(
+      extractDates(text).map(x => x.date)
+    )
+  ];
 
-  const all=[...new Set(
-    extractDates(text).map(x=>x.date)
-  )];
-
-  if(all.length===1){
+  if (allDates.length === 1) {
     return {
-      date:all[0],
-      confident:false,
-      reason:"Як сана ёфт шуд, аммо EXP муайян нест."
+      date: allDates[0],
+      confident: false
     };
   }
 
   return {
-    date:null,
-    confident:false,
-    reason:all.length
-      ?"Якчанд сана ёфт шуд, аммо муҳлат маълум нест."
-      :"Сана ёфт нашуд."
+    date: null,
+    confident: false
   };
 }
 
-/* ===== IMAGE PROCESSING ===== */
+/* =========================
+   IMAGE PREPROCESSING
+========================= */
 
-function loadImage(file){
-  return new Promise((resolve,reject)=>{
-    const img=new Image();
-    const url=URL.createObjectURL(file);
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
 
-    img.onload=()=>{
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
       URL.revokeObjectURL(url);
       resolve(img);
     };
 
-    img.onerror=()=>{
+    img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Акс кушода нашуд."));
+      reject(
+        new Error("Акс кушода нашуд.")
+      );
     };
 
-    img.src=url;
+    img.src = url;
   });
 }
 
-function makeCanvas(img,mode){
-  const canvas=document.createElement("canvas");
+function makeCanvas(img, mode) {
+  const canvas =
+    document.createElement("canvas");
 
-  const scale=Math.min(
+  const scale = Math.min(
     3,
-    Math.max(1,1800/img.width)
+    Math.max(1, 1800 / img.width)
   );
 
-  canvas.width=Math.round(img.width*scale);
-  canvas.height=Math.round(img.height*scale);
-
-  const ctx=canvas.getContext(
-    "2d",{willReadFrequently:true}
+  canvas.width = Math.round(
+    img.width * scale
   );
 
-  ctx.drawImage(img,0,0,canvas.width,canvas.height);
-
-  if(mode==="original") return canvas;
-
-  const image=ctx.getImageData(
-    0,0,canvas.width,canvas.height
+  canvas.height = Math.round(
+    img.height * scale
   );
 
-  const d=image.data;
+  const ctx = canvas.getContext(
+    "2d",
+    { willReadFrequently: true }
+  );
 
-  for(let i=0;i<d.length;i+=4){
-    let gray=
-      .299*d[i]+.587*d[i+1]+.114*d[i+2];
+  ctx.drawImage(
+    img,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
-    if(mode==="contrast"){
-      gray=Math.max(
-        0,Math.min(255,(gray-128)*1.8+128)
+  if (mode === "original") {
+    return canvas;
+  }
+
+  const image = ctx.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  const data = image.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let gray =
+      0.299 * data[i] +
+      0.587 * data[i + 1] +
+      0.114 * data[i + 2];
+
+    if (mode === "contrast") {
+      gray = Math.max(
+        0,
+        Math.min(
+          255,
+          (gray - 128) * 1.8 + 128
+        )
       );
     }
 
-    if(mode==="binary"){
-      gray=gray>145?255:0;
+    if (mode === "binary") {
+      gray = gray > 145 ? 255 : 0;
     }
 
-    d[i]=gray;
-    d[i+1]=gray;
-    d[i+2]=gray;
+    data[i] = gray;
+    data[i + 1] = gray;
+    data[i + 2] = gray;
   }
 
-  ctx.putImageData(image,0,0);
+  ctx.putImageData(image, 0, 0);
+
   return canvas;
 }
 
-/* ===== OCR ===== */
+/* =========================
+   EXPIRY OCR
+========================= */
 
-async function scanImage(input){
-  const file=input.files?.[0];
-  if(!file || processing) return;
+async function scanExpiry(input) {
+  const file = input.files?.[0];
 
-  if(!value("name")){
-    alert("Аввал номи маҳсулотро нависед.");
-    input.value="";
+  if (!file || processing) {
     return;
   }
 
-  if(typeof Tesseract==="undefined"){
-    setStatus(
+  if (!value("barcode")) {
+    alert(
+      "Аввал штрихкодро скан кунед."
+    );
+    input.value = "";
+    return;
+  }
+
+  if (!value("name")) {
+    alert(
+      "Номи маҳсулотро ворид кунед."
+    );
+    input.value = "";
+    return;
+  }
+
+  if (typeof Tesseract === "undefined") {
+    setOCRStatus(
       "OCR бор нашуд. Интернетро санҷед.",
       "error"
     );
     return;
   }
 
-  processing=true;
-  el("saveBtn").disabled=true;
+  processing = true;
+  el("saveBtn").disabled = true;
 
-  if(imageURL) URL.revokeObjectURL(imageURL);
-  imageURL=URL.createObjectURL(file);
+  if (imageURL) {
+    URL.revokeObjectURL(imageURL);
+  }
 
-  el("preview").src=imageURL;
-  el("preview").style.display="block";
+  imageURL = URL.createObjectURL(file);
 
-  setStatus("Сана хонда мешавад...");
+  el("datePreview").src = imageURL;
+  el("datePreview").style.display = "block";
 
-  let worker=null;
+  setOCRStatus(
+    "Санаи муҳлат хонда мешавад..."
+  );
 
-  try{
-    const img=await loadImage(file);
+  let worker = null;
 
-    worker=await Tesseract.createWorker("eng+rus");
+  try {
+    const img = await loadImage(file);
 
-    const modes=["original","contrast","binary"];
-    const results=[];
+    worker = await Tesseract.createWorker(
+      "eng+rus"
+    );
 
-    for(let i=0;i<modes.length;i++){
-      setStatus(
-        "Санҷиши акс: "+(i+1)+" аз "+modes.length
+    const modes = [
+      "original",
+      "contrast",
+      "binary"
+    ];
+
+    const results = [];
+
+    for (let i = 0; i < modes.length; i++) {
+      setOCRStatus(
+        "Таҳлили акс: " +
+        (i + 1) +
+        " аз " +
+        modes.length
       );
 
-      const canvas=makeCanvas(img,modes[i]);
-      const result=await worker.recognize(canvas);
-      const text=result.data.text||"";
+      const canvas = makeCanvas(
+        img,
+        modes[i]
+      );
+
+      const result =
+        await worker.recognize(canvas);
+
+      const text =
+        result.data.text || "";
+
+      const parsed =
+        detectExpiry(text);
 
       results.push({
         text,
-        parsed:detectExpiry(text)
+        parsed
       });
 
-      if(results[results.length-1].parsed.confident){
+      if (parsed.confident) {
         break;
       }
     }
 
-    el("ocrText").textContent=
-      results.map((r,i)=>
-        "Санҷиш "+(i+1)+":\n"+r.text
-      ).join("\n\n----------------\n\n");
+    el("ocrText").textContent =
+      results.map((r, i) => {
+        return (
+          "Санҷиш " +
+          (i + 1) +
+          ":\n" +
+          r.text
+        );
+      }).join("\n\n----------------\n\n");
 
-    const confident=results.find(
-      r=>r.parsed.confident
-    );
+    const confidentResults =
+      results.filter(r => r.parsed.confident);
 
-    if(confident){
-      const date=confident.parsed.date;
-      el("expiry").value=date;
+    const confidentDates = [
+      ...new Set(
+        confidentResults.map(
+          r => r.parsed.date
+        )
+      )
+    ];
 
-      setStatus(
-        "Муҳлат ёфт шуд: "+date+
+    if (confidentDates.length === 1) {
+      const date = confidentDates[0];
+
+      el("expiry").value = date;
+
+      setOCRStatus(
+        "Муҳлат ёфт шуд: " +
+        date +
         ". Сабт иҷро мешавад..."
       );
 
-      const saved=saveProduct(true);
+      const saved = saveProduct(true);
 
-      if(saved){
-        setStatus(
-          "✅ Муҳлат "+date+
-          " хонда ва худкор дар анбор сабт шуд!"
+      if (saved) {
+        setOCRStatus(
+          "✅ Муҳлат " +
+          date +
+          " хонда ва худкор сабт шуд!"
         );
       }
-    }else{
-      const dates=[...new Set(
-        results.flatMap(r=>
-          extractDates(r.text).map(x=>x.date)
-        )
-      )];
 
-      if(dates.length===1){
-        el("expiry").value=dates[0];
-        setStatus(
-          "Сана ёфт шуд: "+dates[0]+
-          ". EXP тасдиқ нашуд. Пеш аз сабт санҷед.",
+    } else {
+      const dates = [
+        ...new Set(
+          results.flatMap(r =>
+            extractDates(r.text).map(
+              x => x.date
+            )
+          )
+        )
+      ];
+
+      if (dates.length === 1) {
+        el("expiry").value = dates[0];
+
+        setOCRStatus(
+          "Сана ёфт шуд: " +
+          dates[0] +
+          ". Нишонаи EXP равшан нест. " +
+          "Пеш аз сабт санҷед.",
           "warn"
         );
-      }else{
-        setStatus(
-          "Муҳлати боэътимод ёфт нашуд. "+
-          "Танҳо қисми санаи EXP-ро акс гиред.",
+      } else {
+        setOCRStatus(
+          "Муҳлати боэътимод ёфт нашуд. " +
+          "Танҳо қисми EXP-ро акс гиред.",
           "error"
         );
       }
     }
 
-  }catch(e){
-    setStatus(
-      "Хатои хондани акс: "+e.message,
+  } catch (e) {
+    setOCRStatus(
+      "Хатои OCR: " + e.message,
       "error"
     );
-  }finally{
-    try{
+  } finally {
+    try {
       await worker?.terminate();
-    }catch(e){}
+    } catch (_) {}
 
-    processing=false;
-    el("saveBtn").disabled=false;
-    input.value="";
+    processing = false;
+    el("saveBtn").disabled = false;
+    input.value = "";
   }
 }
 
-/* ===== SAVE ===== */
+/* =========================
+   SAVE PRODUCT
+========================= */
 
-function saveProduct(automatic=false){
-  const name=value("name");
-  const barcode=value("barcode");
-  const branch=value("branch");
-  const expiry=value("expiry");
+function daysUntil(iso) {
+  const date = new Date(
+    iso + "T00:00:00"
+  );
 
-  const qty=Number(value("qty"));
-  const price=Number(value("price"));
+  const now = new Date();
 
-  if(!name){
-    if(!automatic) alert("Номи маҳсулотро ворид кунед.");
+  now.setHours(0, 0, 0, 0);
+
+  return Math.round(
+    (date - now) / 86400000
+  );
+}
+
+function saveProduct(automatic = false) {
+  const barcode = value("barcode");
+  const name = value("name");
+  const branch = value("branch");
+  const expiry = value("expiry");
+
+  const qty = Number(value("qty"));
+  const price = Number(value("price"));
+
+  if (!barcode) {
+    if (!automatic) {
+      alert("Штрихкодро ворид кунед.");
+    }
     return false;
   }
 
-  if(!expiry){
-    if(!automatic) alert("Муҳлатро ворид кунед.");
+  if (!name) {
+    if (!automatic) {
+      alert("Номи маҳсулотро ворид кунед.");
+    }
     return false;
   }
 
-  if(!Number.isInteger(qty)||qty<1){
+  if (!expiry) {
+    if (!automatic) {
+      alert("Санаи муҳлатро ворид кунед.");
+    }
+    return false;
+  }
+
+  if (
+    !Number.isInteger(qty) ||
+    qty < 1
+  ) {
     alert("Миқдорро дуруст ворид кунед.");
     return false;
   }
 
-  if(!Number.isFinite(price)||price<0){
+  if (
+    !Number.isFinite(price) ||
+    price < 0
+  ) {
     alert("Нархро дуруст ворид кунед.");
     return false;
   }
 
-  const days=daysUntil(expiry);
+  const days = daysUntil(expiry);
 
-  if(days<0 && automatic){
-    setStatus(
-      "Муҳлат гузаштааст. Сабти худкор қатъ шуд.",
+  if (days < 0 && automatic) {
+    setOCRStatus(
+      "Муҳлати маҳсулот гузаштааст. " +
+      "Сабти худкор қатъ шуд.",
       "error"
     );
     return false;
   }
 
-  if(days<0 && !automatic){
-    if(!confirm(
-      "Муҳлати маҳсулот гузаштааст. "+
+  if (days < 0 && !automatic) {
+    const ok = confirm(
+      "Муҳлати маҳсулот гузаштааст. " +
       "Ҳамчун маҳсулоти муҳлатгузашта сабт шавад?"
-    )) return false;
+    );
+
+    if (!ok) return false;
   }
 
-  const old=inventory.find(p=>
-    p.name===name &&
-    p.barcode===barcode &&
-    p.branch===branch &&
-    p.expiry===expiry
+  const old = inventory.find(p =>
+    p.barcode === barcode &&
+    p.branch === branch &&
+    p.expiry === expiry
   );
 
-  if(old){
-    old.qty+=qty;
-    old.price=price;
-  }else{
+  if (old) {
+    old.qty += qty;
+    old.name = name;
+    old.price = price;
+  } else {
     inventory.push({
-      id:window.crypto?.randomUUID
-        ?crypto.randomUUID()
-        :String(Date.now())+Math.random(),
-      name,
+      id: window.crypto?.randomUUID
+        ? crypto.randomUUID()
+        : String(Date.now()) + Math.random(),
       barcode,
+      name,
       branch,
       expiry,
       qty,
       price,
-      createdAt:new Date().toISOString()
+      createdAt: new Date().toISOString()
     });
   }
 
-  if(!saveStorage()) return false;
+  if (!saveStorage()) {
+    return false;
+  }
 
   render();
 
-  if(!automatic){
-    setStatus("✅ Маҳсулот сабт шуд!");
+  if (!automatic) {
+    setOCRStatus(
+      "✅ Маҳсулот дар анбор сабт шуд!"
+    );
   }
 
   return true;
 }
 
-function saveManual(){
-  saveProduct(false);
-}
+/* =========================
+   RESET
+========================= */
 
-function resetScan(){
-  ["name","barcode","expiry"].forEach(
-    id=>el(id).value=""
-  );
+function resetForm() {
+  stopBarcode();
 
-  el("qty").value=1;
-  el("price").value=0;
+  [
+    "barcode",
+    "name",
+    "expiry"
+  ].forEach(id => {
+    el(id).value = "";
+  });
 
-  el("preview").style.display="none";
-  el("ocrText").textContent="Ҳоло матн нест.";
+  el("qty").value = 1;
+  el("price").value = 0;
 
-  if(imageURL){
+  el("datePreview").style.display = "none";
+  el("ocrText").textContent = "Ҳоло матн нест.";
+
+  if (imageURL) {
     URL.revokeObjectURL(imageURL);
-    imageURL=null;
+    imageURL = null;
   }
 
-  setStatus("Барои скани нав омода аст.");
+  setBarcodeStatus(
+    "Барои скани нав омода аст."
+  );
+
+  setOCRStatus(
+    "Барои хондани муҳлат омода аст."
+  );
 }
 
-/* ===== INVENTORY ===== */
+/* =========================
+   INVENTORY STATUS
+========================= */
 
-function daysUntil(iso){
-  const d=new Date(iso+"T00:00:00");
-  const now=new Date();
-  now.setHours(0,0,0,0);
+function statusHTML(p) {
+  const days = daysUntil(p.expiry);
 
-  return Math.round((d-now)/86400000);
-}
-
-function status(p){
-  const days=daysUntil(p.expiry);
-
-  if(days<0){
+  if (days < 0) {
     return '<span class="badge bad">Гузашта</span>';
   }
 
-  if(days===0){
+  if (days === 0) {
     return '<span class="badge bad">Имрӯз</span>';
   }
 
-  if(days<=7){
-    return '<span class="badge warn">'+days+' рӯз</span>';
+  if (days <= 7) {
+    return (
+      '<span class="badge warn">' +
+      days +
+      ' рӯз</span>'
+    );
   }
 
   return '<span class="badge">Муқаррарӣ</span>';
 }
 
-function deleteProduct(id){
-  if(!confirm("Маҳсулот ҳазф шавад?")) return;
+/* =========================
+   DELETE
+========================= */
 
-  inventory=inventory.filter(p=>p.id!==id);
+function deleteProduct(id) {
+  if (!confirm("Маҳсулот ҳазф шавад?")) {
+    return;
+  }
+
+  inventory = inventory.filter(
+    p => p.id !== id
+  );
+
   saveStorage();
   render();
 }
 
-function render(){
-  el("total").textContent=inventory.length;
+/* =========================
+   RENDER
+========================= */
 
-  el("near").textContent=inventory.filter(p=>{
-    const d=daysUntil(p.expiry);
-    return d>=0&&d<=7;
-  }).length;
+function render() {
+  el("total").textContent =
+    inventory.length;
 
-  el("expired").textContent=inventory.filter(
-    p=>daysUntil(p.expiry)<0
-  ).length;
+  el("near").textContent =
+    inventory.filter(p => {
+      const days = daysUntil(p.expiry);
 
-  el("inventoryBody").innerHTML=
-    inventory.map(p=>`
+      return days >= 0 && days <= 7;
+    }).length;
+
+  el("expired").textContent =
+    inventory.filter(
+      p => daysUntil(p.expiry) < 0
+    ).length;
+
+  el("inventoryBody").innerHTML =
+    inventory.map(p => `
       <tr>
         <td>${escapeHTML(p.name)}</td>
+        <td>${escapeHTML(p.barcode)}</td>
         <td>${escapeHTML(p.expiry)}</td>
         <td>${p.qty}</td>
         <td>${escapeHTML(p.branch)}</td>
-        <td>${status(p)}</td>
+        <td>${statusHTML(p)}</td>
         <td>
           <button class="btn red"
             onclick="deleteProduct('${p.id}')">
@@ -898,58 +1414,112 @@ function render(){
         </td>
       </tr>
     `).join("") ||
-    '<tr><td colspan="6">Анбор холӣ аст.</td></tr>';
+    '<tr><td colspan="7">Анбор холӣ аст.</td></tr>';
 
-  const alerts=[...inventory].sort(
-    (a,b)=>a.expiry.localeCompare(b.expiry)
+  const sorted = [...inventory].sort(
+    (a, b) =>
+      a.expiry.localeCompare(b.expiry)
   );
 
-  el("alertsList").innerHTML=
-    alerts.map(p=>`
+  el("alertsList").innerHTML =
+    sorted.map(p => `
       <div class="item">
         <div class="row">
           <b>${escapeHTML(p.name)}</b>
-          ${status(p)}
+          ${statusHTML(p)}
         </div>
-        <p>Муҳлат: ${escapeHTML(p.expiry)}</p>
+
+        <p>
+          Штрихкод:
+          ${escapeHTML(p.barcode)}
+        </p>
+
+        <p>
+          Муҳлат:
+          ${escapeHTML(p.expiry)}
+        </p>
+
         <p class="muted">
-          ${p.qty} дона • ${escapeHTML(p.branch)}
+          ${p.qty} дона •
+          ${escapeHTML(p.branch)}
         </p>
       </div>
     `).join("") ||
     '<p>Маҳсулот нест.</p>';
 }
 
-function exportCSV(){
-  const rows=[
-    ["Name","Barcode","Branch","Expiry","Qty","Price"],
-    ...inventory.map(p=>[
-      p.name,p.barcode,p.branch,
-      p.expiry,p.qty,p.price
+/* =========================
+   CSV EXPORT
+========================= */
+
+function exportCSV() {
+  const rows = [
+    [
+      "Name",
+      "Barcode",
+      "Branch",
+      "Expiry",
+      "Qty",
+      "Price"
+    ],
+    ...inventory.map(p => [
+      p.name,
+      p.barcode,
+      p.branch,
+      p.expiry,
+      p.qty,
+      p.price
     ])
   ];
 
-  const csv=rows.map(r=>
-    r.map(v=>'"'+String(v).replaceAll('"','""')+'"')
-      .join(",")
+  const csv = rows.map(row =>
+    row.map(v =>
+      '"' +
+      String(v).replaceAll('"', '""') +
+      '"'
+    ).join(",")
   ).join("\r\n");
 
-  const blob=new Blob(
-    ["\uFEFF"+csv],
-    {type:"text/csv;charset=utf-8"}
+  const blob = new Blob(
+    ["\uFEFF" + csv],
+    { type: "text/csv;charset=utf-8" }
   );
 
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
+  const url = URL.createObjectURL(blob);
 
-  a.href=url;
-  a.download="yovar-expiry.csv";
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "yovar-inventory.csv";
   a.click();
 
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
+/* =========================
+   INITIALIZE
+========================= */
+
 render();
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (document.hidden) {
+      stopBarcode();
+    }
+  }
+);
+
+window.addEventListener(
+  "pagehide",
+  () => {
+    stopBarcode();
+  }
+);
+
 </script>
 </body>
 </html>
