@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#075b47">
+<title>YOVAR — Smart Inventory</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--green:#087b5a;--dark:#063e32;--bg:#f3f7f5;--line:#dfe9e3;--red:#c63c3c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#18382e;font-family:system-ui,Arial}
+header{background:linear-gradient(120deg,#064936,#0a906b);color:white;padding:23px 16px}
+header h1{margin:0;font-size:25px}
+header p{margin:6px 0 0;opacity:.85}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px;background:white}
+button{cursor:pointer;font:inherit}
+nav button,.btn{border:0;border-radius:12px;padding:12px 15px;font-weight:700}
+nav button{background:#edf5f0;color:var(--dark);white-space:nowrap}
+nav button.active,.btn{background:var(--green);color:white}
+.btn.secondary{background:#e5f2eb;color:var(--dark)}
+.btn.danger{background:var(--red)}
+main{max-width:1150px;margin:auto;padding:18px 13px 45px}
+.page{display:none}.page.active{display:block}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 15px;box-shadow:0 5px 18px #164b3510}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+h2{margin:0 0 14px;font-size:21px}
+h3{margin:0 0 12px}
+label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border:1px solid #cfded5;border-radius:10px;font:inherit}
+input:focus{outline:2px solid #8ad3b3}
+.btn{margin:10px 5px 5px 0}
+.stat{font-size:29px;font-weight:900;color:var(--green)}
+.muted{color:#6b8177;font-size:13px}
+.notice{background:#fff5df;padding:12px;border-radius:10px;margin:12px 0}
+.result{background:#e8f7ee;padding:12px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.item{border-bottom:1px solid var(--line);padding:13px 0}
+.bad{color:var(--red);font-weight:700}
+.warn{color:#bd7a0b;font-weight:700}
+.good{color:var(--green);font-weight:700}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:700px}
+td,th{padding:12px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{background:#f5faf7}
+#reader{max-width:450px;margin:auto}
+footer{text-align:center;color:#81938a;font-size:12px;padding:25px}
+@media(max-width:750px){.grid,.two{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.two{grid-template-columns:1fr}.grid{gap:8px}.card{padding:13px}.stat{font-size:23px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>YOVAR — Smart Inventory</h1>
+<p>Идоракунии интеллектуалии анбор ва муҳлати маҳсулот</p>
+</header>
+
+<nav>
+<button class="active" onclick="page('dashboard',this)">📊 Панел</button>
+<button onclick="page('scanner',this)">📷 Сканер</button>
+<button onclick="page('inventory',this)">📦 Анбор</button>
+<button onclick="page('expiry',this)">⏰ Муҳлат</button>
+<button onclick="page('discounts',this)">🏷 Тахфиф</button>
+<button onclick="page('forecast',this)">📈 Пешгӯӣ</button>
+</nav>
+
+<main>
+<section class="page active" id="dashboard">
+<h2>Панели роҳбарият</h2>
+<div class="grid">
+<div class="card"><div class="muted">Партияҳо</div><div class="stat" id="count">0</div></div>
+<div class="card"><div class="muted">Миқдор</div><div class="stat" id="quantity">0</div></div>
+<div class="card"><div class="muted">Муҳлат наздик</div><div class="stat" id="near">0</div></div>
+<div class="card"><div class="muted">Муҳлат гузашта</div><div class="stat" id="expired">0</div></div>
+</div>
+<div class="card">
+<h3>Арзиши чаканаи маҳсулоти дар хавф</h3>
+<div class="stat" id="risk">0 сомонӣ</div>
+<p class="muted">Ҳисоби намунавӣ, на зарари воқеӣ.</p>
+</div>
+<div class="card"><h3>Огоҳиҳо</h3><div id="alerts"></div></div>
+</section>
+
+<section class="page" id="scanner">
+<h2>Қабули маҳсулот</h2>
+<div class="two">
+<div class="card">
+<h3>1. Скан кардани штрихкод</h3>
+<div id="reader"></div>
+<button class="btn" onclick="startScan()">📷 Кушодани камера</button>
+<button class="btn secondary" onclick="stopScan()">Қатъ</button>
+<label>Ё акси штрихкодро интихоб кунед</label>
+<input type="file" accept="image/*" onchange="scanImage(this)">
+<label>Штрихкод</label>
+<input id="barcode" placeholder="Рақами штрихкод">
+<button class="btn secondary" onclick="findName()">Ҷустуҷӯи ном</button>
+<div class="result" id="scanStatus">Барои скан омода аст.</div>
+<label>Номи маҳсулот</label>
+<input id="name" placeholder="Масалан: Йогурт">
+<label>Филиал</label>
+<select id="branch">
+<option>Филиали 1</option>
+<option>Филиали 2</option>
+<option>Филиали 3</option>
+</select>
+<label>Миқдор</label>
+<input id="qty" type="number" min="1" value="1">
+<label>Нарх (сомонӣ)</label>
+<input id="price" type="number" min="0" step=".01" value="0">
+<label>Фурӯши миёна дар як рӯз</label>
+<input id="daily" type="number" min="0" value="0">
+</div>
+
+<div class="card">
+<h3>2. Скан кардани санаҳо</h3>
+<p class="muted">Аз қисми бастабандӣ, ки санаҳо навишта шудаанд, акс гиред.</p>
+<label>Акс бо камера</label>
+<input type="file" accept="image/*" capture="environment" onchange="readDates(this)">
+<label>Ё акс аз галерея</label>
+<input type="file" accept="image/*" onchange="readDates(this)">
+<div class="result" id="ocrStatus">Ҳоло акс интихоб нашудааст.</div>
+<div class="notice" id="ocrText">Матни хондашуда дар ин ҷо пайдо мешавад.</div>
+<label>Санаи истеҳсол</label>
+<input id="made" type="date">
+<label>Санаи анҷоми муҳлат</label>
+<input id="until" type="date">
+<div class="notice">Санаҳои аз OCR хондашударо ҳатман санҷед.</div>
+<button class="btn" onclick="save()">💾 Сабт дар анбор</button>
+<button class="btn secondary" onclick="clearForm()">Тоза кардан</button>
+</div>
+</div>
+</section>
+
+<section class="page" id="inventory">
+<h2>Анбор</h2>
+<div class="card">
+<input id="search" placeholder="Ҷустуҷӯи маҳсулот..." oninput="render()">
+<button class="btn secondary" onclick="exportCSV()">⬇ CSV</button>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Маҳсулот</th><th>Штрихкод</th><th>Филиал</th><th>Миқдор</th><th>Истеҳсол</th><th>Муҳлат</th><th>Амал</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section class="page" id="expiry">
+<h2>Назорати муҳлат</h2>
+<div class="card" id="expiryList"></div>
+</section>
+
+<section class="page" id="discounts">
+<h2>Пешниҳоди тахфифҳо</h2>
+<div class="card" id="discountList"></div>
+</section>
+
+<section class="page" id="forecast">
+<h2>Пешгӯии талабот</h2>
+<div class="card" id="forecastList"></div>
+</section>
+</main>
+
+<footer>YOVAR — Smart Inventory • Намунаи мустақил, на системаи расмии «Ёвар»</footer>
+
+<script>
+"use strict";
+const KEY="yovar_smart_inventory_2026";
+let data=[];
+try{data=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){data=[]}
+if(!Array.isArray(data))data=[];
+let scanner=null,starting=false;
+
+const el=id=>document.getElementById(id);
+const val=id=>el(id).value.trim();
+const escapeHTML=s=>String(s??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+})[c]);
+
+function store(){
+try{localStorage.setItem(KEY,JSON.stringify(data));return true}
+catch(e){alert("Сабт ноком шуд. Хотираи браузерро санҷед.");return false}
+}
+function days(s){
+if(!s)return null;
+const now=new Date(),d=new Date(s+"T00:00:00");
+const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+return Math.round((d-t)/86400000);
+}
+function state(p){
+const n=days(p.until);
+if(n===null)return ["Бе сана","warn"];
+if(n<0)return ["Муҳлат гузашта","bad"];
+if(n===0)return ["Рӯзи охир","bad"];
+if(n<=7)return [n+" рӯз","bad"];
+if(n<=30)return [n+" рӯз","warn"];
+return ["Муқаррарӣ","good"];
+}
+function page(id,button){
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+el(id).classList.add("active");
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+if(button)button.classList.add("active");
+render();
+window.scrollTo(0,0);
+}
+function go(id){
+const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+id+"'"));
+page(id,b);
+}
+async function stopScan(){
+if(!scanner)return;
+const s=scanner;scanner=null;
+try{if(s.isScanning)await s.stop();await s.clear()}catch(e){console.warn(e)}
+}
+async function startScan(){
+if(starting||scanner)return;
+if(!window.isSecureContext){el("scanStatus").textContent="Сайтро бо HTTPS кушоед.";return}
+if(typeof Html5Qrcode==="undefined"){el("scanStatus").textContent="Китобхонаи сканер бор нашуд.";return}
+starting=true;
+el("scanStatus").textContent="Камера кушода мешавад...";
+try{
+scanner=new Html5Qrcode("reader");
+await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:140}},async code=>{
+el("barcode").value=code;
+el("scanStatus").textContent="Штрихкод: "+code;
+await stopScan();
+await findName();
+},()=>{});
+}catch(e){
+el("scanStatus").textContent="Камера кушода нашуд: "+e.message+". Иҷозати камераро дар браузер фаъол кунед.";
+await stopScan();
+}finally{starting=false}
+}
+async function scanImage(input){
+const file=input.files?.[0];if(!file)return;
+await stopScan();
+if(typeof Html5Qrcode==="undefined"){alert("Сканер дастрас нест");return}
+let temp;
+try{
+temp=new Html5Qrcode("reader");
+const code=await temp.scanFile(file,true);
+el("barcode").value=code;
+await findName();
+}catch(e){el("scanStatus").textContent="Штрихкод хонда нашуд. Акси равшантар гиред."}
+finally{try{await temp?.clear()}catch(e){}input.value=""}
+}
+async function findName(){
+const code=val("barcode");
+if(!code){alert("Штрихкодро ворид кунед");return}
+const known=data.find(p=>p.barcode===code);
+if(known){
+el("name").value=known.name;
+el("price").value=known.price;
+el("daily").value=known.daily;
+el("scanStatus").textContent="Ном аз анбор ёфт шуд: "+known.name;
+return;
+}
+el("scanStatus").textContent="Ҷустуҷӯи онлайн...";
+try{
+const controller=new AbortController();
+const timer=setTimeout(()=>controller.abort(),8000);
+let response;
+try{response=await fetch("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(code)+".json",{signal:controller.signal})}
+finally{clearTimeout(timer)}
+if(!response.ok)throw Error("HTTP");
+const result=await response.json();
+const name=result.product?.product_name||result.product?.product_name_ru||result.product?.product_name_en;
+if(result.status===1&&name){
+el("name").value=name;
+el("scanStatus").textContent="Маҳсулот ёфт шуд: "+name;
+}else el("scanStatus").textContent="Ном ёфт нашуд. Онро дастӣ нависед.";
+}catch(e){el("scanStatus").textContent="Ҷустуҷӯ дастрас нест. Номро дастӣ ворид кунед."}
+}
+function dateISO(y,m,d){
+y=Number(y);m=Number(m);d=Number(d);
+if(y<100)y+=2000;
+const x=new Date(y,m-1,d);
+if(y<2000||y>2100||x.getFullYear()!==y||x.getMonth()!==m-1||x.getDate()!==d)return null;
+return String(y).padStart(4,"0")+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+}
+function datesFrom(text){
+const found=[];
+for(const m of text.matchAll(/\b(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})\b/g)){
+const d=dateISO(m[1],m[2],m[3]);if(d)found.push({date:d,index:m.index});
+}
+for(const m of text.matchAll(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/g)){
+const d=dateISO(m[3],m[2],m[1]);if(d)found.push({date:d,index:m.index});
+}
+return found.sort((a,b)=>a.index-b.index);
+}
+async function readDates(input){
+const file=input.files?.[0];if(!file)return;
+if(typeof Tesseract==="undefined"){el("ocrStatus").textContent="OCR бор нашуд.";return}
+el("ocrStatus").textContent="Матн хонда мешавад...";
+let worker;
+try{
+worker=await Tesseract.createWorker("rus+eng");
+const result=await worker.recognize(file);
+const text=result.data.text||"";
+el("ocrText").textContent=text||"Матн ёфт нашуд.";
+let made=null,until=null;
+for(const line of text.split(/\n/)){
+const matches=datesFrom(line);
+if(!matches.length)continue;
+if(/MFG|MFD|PROD|ИЗГОТ|ИСТЕҲСОЛ/i.test(line))made=matches[0].date;
+if(/EXP|BEST BEFORE|USE BY|ГОДЕН|СРОК|МУҲЛАТ/i.test(line))until=matches[matches.length-1].date;
+}
+const all=[...new Set(datesFrom(text).map(x=>x.date))].sort();
+if(!made&&!until&&all.length>=2){made=all[0];until=all[all.length-1]}
+if(made)el("made").value=made;
+if(until)el("until").value=until;
+el("ocrStatus").textContent=made&&until?"Санаҳо ёфт шуданд. Санҷед.":"Санаҳо пурра муайян нашуданд. Санҷед ё дастӣ ворид кунед. "+all.join(", ");
+}catch(e){el("ocrStatus").textContent="OCR ноком шуд: "+e.message}
+finally{try{await worker?.terminate()}catch(e){}input.value=""}
+}
+function save(){
+const barcode=val("barcode"),name=val("name"),branch=val("branch");
+const qty=Number(val("qty")),price=Number(val("price")),daily=Number(val("daily"));
+const made=val("made"),until=val("until");
+if(!barcode||!name||!made||!until){alert("Штрихкод, ном ва ҳар ду санаро пур кунед.");return}
+if(!Number.isInteger(qty)||qty<=0||!Number.isFinite(price)||price<0||!Number.isFinite(daily)||daily<0){alert("Миқдор ё нарх нодуруст аст.");return}
+if(made>until){alert("Санаи истеҳсол аз муҳлат дертар аст.");return}
+if(days(until)<0&&!confirm("Муҳлат гузаштааст. Танҳо барои хориҷ кардан сабт шавад?"))return;
+const old=data.find(p=>p.barcode===barcode&&p.branch===branch&&p.made===made&&p.until===until);
+if(old){old.qty+=qty;old.name=name;old.price=price;old.daily=daily}
+else data.push({id:String(Date.now())+Math.random(),barcode,name,branch,qty,price,daily,made,until,discount:0});
+if(!store())return;
+clearForm();render();alert("Дар анбор сабт шуд!");go("inventory");
+}
+function clearForm(){
+["barcode","name","made","until"].forEach(id=>el(id).value="");
+el("qty").value=1;el("price").value=0;el("daily").value=0;
+el("scanStatus").textContent="Барои скан омода аст.";
+el("ocrStatus").textContent="Акс интихоб нашудааст.";
+el("ocrText").textContent="Матни хондашуда дар ин ҷо пайдо мешавад.";
+}
+function removeItem(id){
+if(!confirm("Маҳсулот ҳазф шавад?"))return;
+data=data.filter(p=>p.id!==id);store();render();
+}
+function suggestion(p){
+const n=days(p.until);
+if(n===null||n<0)return 0;
+return n<=3?30:n<=7?20:n<=14?10:0;
+}
+function approve(id){
+const p=data.find(x=>x.id===id);if(!p)return;
+const s=suggestion(p);if(!s)return;
+if(confirm("Тахфифи "+s+"% тасдиқ шавад?")){p.discount=s;store();render()}
+}
+function render(){
+el("count").textContent=data.length;
+el("quantity").textContent=data.reduce((s,p)=>s+p.qty,0);
+el("near").textContent=data.filter(p=>days(p.until)>=0&&days(p.until)<=14).length;
+el("expired").textContent=data.filter(p=>days(p.until)<0).length;
+el("risk").textContent=data.filter(p=>days(p.until)<=7).reduce((s,p)=>s+p.qty*p.price,0).toFixed(2)+" сомонӣ";
+const risky=data.filter(p=>days(p.until)<=7);
+el("alerts").innerHTML=risky.map(p=>'<div class="item"><b>'+escapeHTML(p.name)+'</b> — <span class="bad">'+escapeHTML(state(p)[0])+'</span></div>').join("")||"Огоҳӣ нест.";
+const q=val("search").toLowerCase();
+el("rows").innerHTML=data.filter(p=>p.name.toLowerCase().includes(q)||p.barcode.includes(q)).map(p=>
+'<tr><td>'+escapeHTML(p.name)+'</td><td>'+escapeHTML(p.barcode)+'</td><td>'+escapeHTML(p.branch)+'</td><td>'+p.qty+'</td><td>'+escapeHTML(p.made)+'</td><td>'+escapeHTML(p.until)+'</td><td><button class="btn danger" onclick="removeItem(\''+p.id+'\')">Ҳазф</button></td></tr>'
+).join("")||'<tr><td colspan="7">Анбор холӣ аст.</td></tr>';
+el("expiryList").innerHTML=[...data].sort((a,b)=>a.until.localeCompare(b.until)).map(p=>{
+const st=state(p);
+return '<div class="item"><b>'+escapeHTML(p.name)+'</b> — '+p.qty+' дона • <span class="'+st[1]+'">'+escapeHTML(st[0])+'</span><div class="muted">Муҳлат: '+escapeHTML(p.until)+'</div></div>';
+}).join("")||"Маҳсулот нест.";
+el("discountList").innerHTML=data.filter(p=>suggestion(p)>0).map(p=>{
+const s=suggestion(p);
+return '<div class="item"><b>'+escapeHTML(p.name)+'</b><p>Тахфиф: '+s+'% • Нархи нав: '+(p.price*(1-s/100)).toFixed(2)+' сомонӣ</p><p class="muted">Тасдиқшуда: '+(p.discount||0)+'%</p><button class="btn" onclick="approve(\''+p.id+'\')">Тасдиқ</button></div>';
+}).join("")||"Пешниҳоди тахфиф нест.";
+el("forecastList").innerHTML=data.map(p=>{
+const need=Math.ceil(p.daily*7);
+return '<div class="item"><b>'+escapeHTML(p.name)+'</b><p>Талаботи 7 рӯз: '+need+' дона • Захира: '+p.qty+' дона • Камбудӣ: '+Math.max(0,need-p.qty)+' дона</p></div>';
+}).join("")||"Барои пешгӯӣ маҳсулот сабт кунед.";
+}
+function exportCSV(){
+const rows=[["Barcode","Name","Branch","Qty","Price","Daily","Made","Expiry","Discount"],...data.map(p=>[p.barcode,p.name,p.branch,p.qty,p.price,p.daily,p.made,p.until,p.discount])];
+const csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(",")).join("\r\n");
+const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+const url=URL.createObjectURL(blob),a=document.createElement("a");
+a.href=url;a.download="yovar-inventory.csv";a.click();
+setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)stopScan()});
+render();
+</script>
+</body>
+</html>
+# YOVAR-SMART-INVENTORY
