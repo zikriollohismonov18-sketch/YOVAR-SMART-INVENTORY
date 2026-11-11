@@ -4,790 +4,950 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#075b47">
+<meta name="theme-color" content="#087b5a">
 <title>YOVAR — Smart Inventory</title>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 :root{
---green:#087b5a;
---dark:#064936;
---bg:#f2f7f4;
---line:#dce8e0;
---red:#c43c3c;
---orange:#bd7809
+  --green:#087b5a;
+  --dark:#07513e;
+  --bg:#f3f7f5;
+  --line:#dce8e1;
+  --red:#d33d45;
+  --orange:#d38a14;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:system-ui,Arial;color:#18372d}
-header{background:linear-gradient(120deg,#064936,#0a916c);color:white;padding:23px 15px}
-header h1{margin:0;font-size:26px}
+body{
+  margin:0;
+  font-family:Arial,system-ui,sans-serif;
+  background:var(--bg);
+  color:#17362b;
+}
+header{
+  background:linear-gradient(120deg,#064c39,#09946c);
+  padding:22px 16px;
+  color:white;
+}
+header h1{margin:0;font-size:25px}
 header p{margin:7px 0 0;opacity:.85;font-size:13px}
-nav{display:flex;gap:8px;overflow-x:auto;background:white;padding:12px}
-button,input,select{font:inherit}
-button{cursor:pointer}
-nav button{border:0;border-radius:11px;padding:12px;background:#eaf3ed;color:var(--dark);white-space:nowrap;font-weight:700}
+nav{
+  display:flex;
+  gap:8px;
+  padding:12px;
+  background:white;
+  overflow-x:auto;
+}
+nav button{
+  padding:12px 16px;
+  border:0;
+  border-radius:12px;
+  background:#eaf3ed;
+  color:#164734;
+  font-weight:bold;
+  white-space:nowrap;
+}
 nav button.active{background:var(--green);color:white}
-main{max-width:1150px;margin:auto;padding:18px 12px 45px}
-.page{display:none}.page.active{display:block}
-.card{background:white;border:1px solid var(--line);border-radius:17px;padding:17px;margin-bottom:15px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-h2{margin:0 0 14px;font-size:21px}
-h3{margin:0 0 12px}
-label{display:block;font-size:13px;font-weight:700;margin:13px 0 6px}
-input,select{width:100%;padding:12px;border:1px solid #cdded4;border-radius:11px;background:white}
-input:focus,select:focus{outline:2px solid #8dd5b4}
-.btn{border:0;background:var(--green);color:white;padding:12px 16px;border-radius:11px;font-weight:700;margin:7px 5px 5px 0}
-.btn.secondary{background:#e6f2ea;color:var(--dark)}
-.btn.danger{background:var(--red)}
-.btn:disabled{opacity:.5}
-.stat{font-size:29px;font-weight:900;color:var(--green)}
-.muted{color:#72867c;font-size:13px;line-height:1.6}
-.notice{background:#fff4df;border-radius:11px;padding:12px;margin:12px 0;font-size:13px}
-.result{background:#e7f6ed;border-radius:11px;padding:12px;margin:12px 0;font-size:13px;overflow-wrap:anywhere}
-.item{padding:13px 0;border-bottom:1px solid var(--line)}
-.bad{color:var(--red);font-weight:700}
-.warn{color:var(--orange);font-weight:700}
-.good{color:var(--green);font-weight:700}
+main{max-width:850px;margin:auto;padding:17px}
+.page{display:none}
+.page.active{display:block}
+.card{
+  background:white;
+  padding:19px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  margin-bottom:15px;
+  box-shadow:0 5px 20px #123d2810;
+}
+h2{font-size:21px;margin:0 0 12px}
+h3{font-size:16px}
+p{line-height:1.5}
+.muted{color:#70857a;font-size:13px}
+label{
+  display:block;
+  margin:14px 0 7px;
+  font-weight:bold;
+  font-size:14px;
+}
+input,select{
+  display:block;
+  width:100%;
+  padding:13px;
+  border:1px solid #cddfd3;
+  border-radius:12px;
+  background:white;
+  font-size:16px;
+}
+button{cursor:pointer;font:inherit}
+.btn{
+  background:var(--green);
+  color:white;
+  border:0;
+  padding:13px 16px;
+  border-radius:12px;
+  font-weight:bold;
+  margin:7px 5px 5px 0;
+}
+.btn.secondary{background:#e6f2eb;color:var(--dark)}
+.btn.red{background:var(--red)}
+.btn:disabled{opacity:.55;cursor:wait}
+.status{
+  background:#e9f6ed;
+  padding:13px;
+  border-radius:12px;
+  margin:14px 0;
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+.status.error{background:#ffe9e9;color:#a6262e}
+.status.warn{background:#fff3d9;color:#8a5a0a}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.stat{
+  padding:15px;
+  border-radius:14px;
+  background:white;
+  border:1px solid var(--line);
+}
+.stat b{display:block;font-size:26px;margin-top:8px}
+.stat span{font-size:12px;color:#688075}
+.item{
+  border:1px solid var(--line);
+  padding:14px;
+  border-radius:14px;
+  margin:10px 0;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.badge{
+  display:inline-block;
+  background:#e7f6ed;
+  color:#087b5a;
+  border-radius:20px;
+  padding:6px 9px;
+  font-size:12px;
+  font-weight:bold;
+}
+.badge.warn{background:#fff0d4;color:#9d650b}
+.badge.bad{background:#ffe5e5;color:#c33636}
+#preview{
+  display:none;
+  width:100%;
+  max-height:300px;
+  object-fit:contain;
+  background:#e7eee9;
+  border-radius:14px;
+  margin:12px 0;
+}
+#ocrCanvas{
+  display:none;
+  width:100%;
+  border-radius:12px;
+  margin:12px 0;
+}
+#ocrText{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  max-height:180px;
+  overflow:auto;
+  font-size:12px;
+  background:#f4f7f5;
+  padding:12px;
+  border-radius:12px;
+}
+.notice{
+  background:#fff5df;
+  padding:12px;
+  border-radius:12px;
+  font-size:13px;
+}
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:560px;
+}
+th,td{
+  text-align:left;
+  border-bottom:1px solid var(--line);
+  padding:11px;
+  font-size:13px;
+}
 .tablewrap{overflow-x:auto}
-table{width:100%;min-width:720px;border-collapse:collapse}
-th,td{padding:12px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
-th{background:#f6faf7}
-#reader{max-width:440px;margin:auto}
-#ocrText{white-space:pre-wrap;max-height:200px;overflow:auto}
-.dateChoices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.dateChoices button{border:1px solid #8bc6a9;background:#eaf8ef;padding:9px;border-radius:9px;color:var(--dark)}
-footer{text-align:center;color:#83968b;padding:25px;font-size:12px}
-@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
-@media(max-width:450px){.card{padding:13px}.stat{font-size:24px}header h1{font-size:23px}}
+footer{
+  text-align:center;
+  padding:25px;
+  color:#81958a;
+  font-size:12px;
+}
+@media(max-width:480px){
+  .stats{gap:7px}
+  .stat{padding:10px}
+  .stat b{font-size:22px}
+  .two{grid-template-columns:1fr}
+}
 </style>
 </head>
 
 <body>
+
 <header>
-<h1>YOVAR — Smart Inventory</h1>
-<p>Идоракунии интеллектуалии анбор ва назорати муҳлати маҳсулот</p>
+  <h1>YOVAR — Smart Inventory</h1>
+  <p>Сканери муҳлати маҳсулот • Сабти худкор</p>
 </header>
 
 <nav>
-<button class="active" onclick="page('dashboard',this)">📊 Панел</button>
-<button onclick="page('scanner',this)">📷 Сканер</button>
-<button onclick="page('inventory',this)">📦 Анбор</button>
-<button onclick="page('expiry',this)">⏰ Муҳлат</button>
-<button onclick="page('discounts',this)">🏷 Тахфиф</button>
-<button onclick="page('forecast',this)">📈 Пешгӯӣ</button>
+  <button class="active" onclick="page('scan',this)">
+    📷 Сканер
+  </button>
+  <button onclick="page('inventory',this)">
+    📦 Анбор
+  </button>
+  <button onclick="page('alerts',this)">
+    ⏰ Муҳлат
+  </button>
 </nav>
 
 <main>
 
-<section id="dashboard" class="page active">
-<h2>Панели роҳбарият</h2>
-<div class="grid">
-<div class="card"><div class="muted">Партияҳо</div><div class="stat" id="count">0</div></div>
-<div class="card"><div class="muted">Миқдор</div><div class="stat" id="quantity">0</div></div>
-<div class="card"><div class="muted">Муҳлат наздик</div><div class="stat" id="near">0</div></div>
-<div class="card"><div class="muted">Муҳлат гузашта</div><div class="stat" id="expired">0</div></div>
-</div>
-<div class="card">
-<h3>Арзиши чаканаи маҳсулоти дар хавф</h3>
-<div class="stat" id="risk">0 сомонӣ</div>
-<p class="muted">Ҳисоби намунавӣ, на зарари воқеӣ.</p>
-</div>
-<div class="card"><h3>Огоҳиҳои муҳим</h3><div id="alerts"></div></div>
-</section>
+<section id="scan" class="page active">
+  <div class="card">
+    <h2>Скан кардани муҳлати маҳсулот</h2>
+    <p class="muted">
+      Танҳо қисми бастаро акс гиред, ки
+      EXP, Best Before ё Годен до навишта шудааст.
+    </p>
 
-<section id="scanner" class="page">
-<h2>Қабули маҳсулот ба анбор</h2>
-<div class="two">
+    <label>Номи маҳсулот</label>
+    <input id="name" placeholder="Масалан: Шир 1 литр">
 
-<div class="card">
-<h3>1. Скан кардани штрихкод</h3>
-<div id="reader"></div>
-<button class="btn" onclick="startScan()">📷 Кушодани камера</button>
-<button class="btn secondary" onclick="stopScan()">Қатъ</button>
+    <label>Штрихкод (ихтиёрӣ)</label>
+    <input id="barcode" placeholder="Рақами штрихкод">
 
-<label>Акси штрихкод</label>
-<input type="file" accept="image/*" onchange="scanImage(this)">
+    <div class="two">
+      <div>
+        <label>Миқдор</label>
+        <input id="qty" type="number" min="1" value="1">
+      </div>
+      <div>
+        <label>Нарх (сомонӣ)</label>
+        <input id="price" type="number" min="0" step="0.01" value="0">
+      </div>
+    </div>
 
-<label>Штрихкод</label>
-<input id="barcode" placeholder="Рақами штрихкод">
+    <label>Филиал</label>
+    <select id="branch">
+      <option>Филиали 1</option>
+      <option>Филиали 2</option>
+      <option>Филиали 3</option>
+    </select>
 
-<button class="btn secondary" onclick="findName()">🔎 Ҷустуҷӯи ном</button>
-<div class="result" id="scanStatus">Барои скан омода аст.</div>
+    <label>📷 Бо камера акс гиред</label>
+    <input type="file"
+      accept="image/*"
+      capture="environment"
+      onchange="scanImage(this)">
 
-<label>Номи маҳсулот</label>
-<input id="name" placeholder="Номи маҳсулот">
+    <label>🖼 Ё аксро интихоб кунед</label>
+    <input type="file"
+      accept="image/*"
+      onchange="scanImage(this)">
 
-<label>Филиал</label>
-<select id="branch">
-<option>Филиали 1</option>
-<option>Филиали 2</option>
-<option>Филиали 3</option>
-</select>
+    <img id="preview" alt="Акси маҳсулот">
+    <canvas id="ocrCanvas"></canvas>
 
-<label>Миқдор (дона)</label>
-<input id="qty" type="number" min="1" value="1">
+    <div id="status" class="status">
+      Барои скан омода аст.
+    </div>
 
-<label>Нарх (сомонӣ)</label>
-<input id="price" type="number" min="0" step=".01" value="0">
+    <label>Санаи анҷоми муҳлат</label>
+    <input id="expiry" type="date">
 
-<label>Фурӯши миёна дар як рӯз</label>
-<input id="daily" type="number" min="0" value="0">
-</div>
+    <button class="btn" id="saveBtn" onclick="saveManual()">
+      💾 Сабт дар анбор
+    </button>
+    <button class="btn secondary" onclick="resetScan()">
+      Тоза кардан
+    </button>
 
-<div class="card">
-<h3>2. Скан кардани санаҳои маҳсулот</h3>
-<p class="muted">Санаи истеҳсол ва анҷоми муҳлатро аз бастабандӣ хонед.</p>
+    <div class="notice">
+      Агар барнома санаи EXP-ро бо эътимоди кофӣ ёбад,
+      сабт худкор иҷро мешавад. Барои санаҳои номуайян
+      тасдиқи дастӣ лозим аст.
+    </div>
 
-<label>📷 Акс бо камера</label>
-<input type="file" accept="image/*" capture="environment" onchange="readDates(this)">
-
-<label>🖼 Акс аз галерея</label>
-<input type="file" accept="image/*" onchange="readDates(this)">
-
-<div class="result" id="ocrStatus">Барои хондани сана омода аст.</div>
-
-<label>Матни аз акс хондашуда</label>
-<div class="notice" id="ocrText">Натиҷаи OCR дар ин ҷо пайдо мешавад.</div>
-
-<label>Санаҳои ёфтшуда — интихоб кунед</label>
-<div class="dateChoices" id="dateChoices"></div>
-
-<label>Санаи истеҳсол</label>
-<input type="date" id="made">
-
-<label>Санаи анҷоми муҳлат</label>
-<input type="date" id="until">
-
-<div class="notice">
-Санаҳоро пеш аз сабт ҳатман санҷед. Агар OCR танҳо як сана ёбад, онро ба майдони дуруст интихоб кунед.
-</div>
-
-<button class="btn" onclick="save()">💾 Сабт дар анбор</button>
-<button class="btn secondary" onclick="clearForm()">Тоза кардан</button>
-</div>
-
-</div>
+    <details>
+      <summary>Нишон додани матни OCR</summary>
+      <div id="ocrText">Ҳоло матн нест.</div>
+    </details>
+  </div>
 </section>
 
 <section id="inventory" class="page">
-<h2>Анбори маҳсулот</h2>
-<div class="card">
-<input id="search" placeholder="Ҷустуҷӯи маҳсулот..." oninput="render()">
-<button class="btn secondary" onclick="exportCSV()">⬇ CSV</button>
-<div class="tablewrap">
-<table>
-<thead>
-<tr>
-<th>Маҳсулот</th><th>Штрихкод</th><th>Филиал</th>
-<th>Миқдор</th><th>Истеҳсол</th><th>Муҳлат</th><th>Амал</th>
-</tr>
-</thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-</div>
+  <h2>Анбори маҳсулот</h2>
+
+  <div class="stats">
+    <div class="stat">
+      <span>Партияҳо</span>
+      <b id="total">0</b>
+    </div>
+    <div class="stat">
+      <span>То 7 рӯз</span>
+      <b id="near">0</b>
+    </div>
+    <div class="stat">
+      <span>Гузашта</span>
+      <b id="expired">0</b>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="btn secondary" onclick="exportCSV()">
+      ⬇ CSV
+    </button>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Маҳсулот</th>
+            <th>Муҳлат</th>
+            <th>Миқдор</th>
+            <th>Филиал</th>
+            <th>Ҳолат</th>
+            <th>Амал</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
-<section id="expiry" class="page">
-<h2>Назорати муҳлат</h2>
-<div class="card" id="expiryList"></div>
-</section>
-
-<section id="discounts" class="page">
-<h2>Пешниҳоди тахфифҳо</h2>
-<div class="card" id="discountList"></div>
-</section>
-
-<section id="forecast" class="page">
-<h2>Пешгӯии талабот</h2>
-<div class="card" id="forecastList"></div>
+<section id="alerts" class="page">
+  <h2>Назорати муҳлат</h2>
+  <div class="card" id="alertsList"></div>
 </section>
 
 </main>
 
 <footer>
-YOVAR — Smart Inventory • Лоиҳаи мустақили намунавӣ
+  YOVAR Smart Inventory • Версияи озмоишӣ
 </footer>
 
 <script>
 "use strict";
 
-const KEY="yovar_smart_inventory_2026";
-let data=[];
+const KEY="yovar_expiry_only_v1";
+let inventory=[];
 
 try{
-data=JSON.parse(localStorage.getItem(KEY)||"[]");
-}catch(e){data=[]}
-
-if(!Array.isArray(data))data=[];
-
-const el=id=>document.getElementById(id);
-const val=id=>el(id).value.trim();
-
-function esc(s){
-return String(s??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#39;"
-})[c]);
-}
-
-function store(){
-try{
-localStorage.setItem(KEY,JSON.stringify(data));
-return true;
+  inventory=JSON.parse(localStorage.getItem(KEY)||"[]");
+  if(!Array.isArray(inventory)) inventory=[];
 }catch(e){
-alert("Сабт ноком шуд. Хотираи браузерро санҷед.");
-return false;
-}
+  inventory=[];
 }
 
-function days(s){
-if(!s)return null;
-const now=new Date();
-const d=new Date(s+"T00:00:00");
-const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-return Math.round((d-t)/86400000);
+let processing=false;
+let imageURL=null;
+
+function el(id){
+  return document.getElementById(id);
 }
 
-function state(p){
-const n=days(p.until);
-if(n===null)return ["Бе сана","warn"];
-if(n<0)return ["Муҳлат гузашта","bad"];
-if(n===0)return ["Рӯзи охир","bad"];
-if(n<=7)return [n+" рӯз","bad"];
-if(n<=30)return [n+" рӯз","warn"];
-return ["Муқаррарӣ","good"];
+function value(id){
+  return el(id).value.trim();
+}
+
+function setStatus(text,type=""){
+  el("status").textContent=text;
+  el("status").className="status "+type;
+}
+
+function escapeHTML(s){
+  return String(s??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
 }
 
 function page(id,button){
-document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
-el(id).classList.add("active");
+  document.querySelectorAll(".page").forEach(
+    p=>p.classList.remove("active")
+  );
+  el(id).classList.add("active");
 
-document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
-if(button)button.classList.add("active");
+  document.querySelectorAll("nav button").forEach(
+    b=>b.classList.remove("active")
+  );
+  button?.classList.add("active");
 
-render();
-window.scrollTo(0,0);
+  render();
 }
 
-function go(id){
-const button=[...document.querySelectorAll("nav button")]
-.find(x=>x.getAttribute("onclick")?.includes("'"+id+"'"));
-page(id,button);
+function saveStorage(){
+  try{
+    localStorage.setItem(KEY,JSON.stringify(inventory));
+    return true;
+  }catch(e){
+    alert("Сабт дар браузер имконнопазир аст.");
+    return false;
+  }
 }
 
-/* BARCODE */
+/* ===== DATE PARSER ===== */
 
-let scanner=null;
-let starting=false;
+function isoDate(y,m,d){
+  y=Number(y);
+  m=Number(m);
+  d=Number(d);
 
-async function stopScan(){
-if(!scanner)return;
-const s=scanner;
-scanner=null;
+  if(y<100) y+=2000;
+  if(y<2020 || y>2100) return null;
 
-try{
-if(s.isScanning)await s.stop();
-await s.clear();
-}catch(e){console.warn(e)}
+  const date=new Date(y,m-1,d);
+
+  if(
+    date.getFullYear()!==y ||
+    date.getMonth()!==m-1 ||
+    date.getDate()!==d
+  ) return null;
+
+  return [
+    String(y).padStart(4,"0"),
+    String(m).padStart(2,"0"),
+    String(d).padStart(2,"0")
+  ].join("-");
 }
 
-async function startScan(){
-if(starting||scanner)return;
+function extractDates(text){
+  const found=[];
 
-if(!window.isSecureContext){
-el("scanStatus").textContent="Сайтро бо HTTPS кушоед.";
-return;
+  // YYYY.MM.DD
+  const a=/\b(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})\b/g;
+
+  for(const m of text.matchAll(a)){
+    const date=isoDate(m[1],m[2],m[3]);
+    if(date){
+      found.push({
+        date,
+        index:m.index,
+        raw:m[0]
+      });
+    }
+  }
+
+  // DD.MM.YYYY or DD.MM.YY
+  const b=/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/g;
+
+  for(const m of text.matchAll(b)){
+    const date=isoDate(m[3],m[2],m[1]);
+    if(date){
+      found.push({
+        date,
+        index:m.index,
+        raw:m[0]
+      });
+    }
+  }
+
+  return found.filter((x,i,arr)=>
+    arr.findIndex(y=>y.index===x.index)===i
+  );
 }
 
-if(typeof Html5Qrcode==="undefined"){
-el("scanStatus").textContent="Китобхонаи сканер бор нашуд.";
-return;
+function detectExpiry(text){
+  const lines=text.split(/\n/);
+  const keywords=
+    /\bEXP\b|EXPIR|BEST\s*BEFORE|USE\s*BY|BBE|ГОДЕН|ГОДНО|СРОК|ИСТЕКАЕТ|МУҲЛАТ/i;
+
+  const manufacture=
+    /\bMFG\b|\bMFD\b|PRODUCTION|ИЗГОТ|ПРОИЗВЕД|ИСТЕҲСОЛ/i;
+
+  const labeled=[];
+
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    if(!keywords.test(line)) continue;
+    if(manufacture.test(line)) continue;
+
+    // Check the same line and the following line.
+    const segment=line+" "+(lines[i+1]||"");
+    const dates=extractDates(segment);
+
+    for(const d of dates){
+      labeled.push(d.date);
+    }
+  }
+
+  const uniqueLabeled=[...new Set(labeled)];
+
+  if(uniqueLabeled.length===1){
+    return {
+      date:uniqueLabeled[0],
+      confident:true,
+      reason:"Сана бо нишонаи EXP/Годен до ёфт шуд."
+    };
+  }
+
+  if(uniqueLabeled.length>1){
+    return {
+      date:null,
+      confident:false,
+      reason:"Якчанд санаи муҳлат ёфт шуд."
+    };
+  }
+
+  const all=[...new Set(
+    extractDates(text).map(x=>x.date)
+  )];
+
+  if(all.length===1){
+    return {
+      date:all[0],
+      confident:false,
+      reason:"Як сана ёфт шуд, аммо EXP муайян нест."
+    };
+  }
+
+  return {
+    date:null,
+    confident:false,
+    reason:all.length
+      ?"Якчанд сана ёфт шуд, аммо муҳлат маълум нест."
+      :"Сана ёфт нашуд."
+  };
 }
 
-starting=true;
-el("scanStatus").textContent="Камера кушода мешавад...";
+/* ===== IMAGE PROCESSING ===== */
 
-try{
-scanner=new Html5Qrcode("reader");
+function loadImage(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
 
-await scanner.start(
-{facingMode:"environment"},
-{fps:10,qrbox:{width:230,height:140}},
-async code=>{
-el("barcode").value=code;
-el("scanStatus").textContent="Штрихкод: "+code;
-await stopScan();
-await findName();
-},
-()=>{}
-);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
 
-}catch(e){
-el("scanStatus").textContent="Камера кушода нашуд: "+e.message;
-await stopScan();
-}finally{
-starting=false;
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      reject(new Error("Акс кушода нашуд."));
+    };
+
+    img.src=url;
+  });
 }
+
+function makeCanvas(img,mode){
+  const canvas=document.createElement("canvas");
+
+  const scale=Math.min(
+    3,
+    Math.max(1,1800/img.width)
+  );
+
+  canvas.width=Math.round(img.width*scale);
+  canvas.height=Math.round(img.height*scale);
+
+  const ctx=canvas.getContext(
+    "2d",{willReadFrequently:true}
+  );
+
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+  if(mode==="original") return canvas;
+
+  const image=ctx.getImageData(
+    0,0,canvas.width,canvas.height
+  );
+
+  const d=image.data;
+
+  for(let i=0;i<d.length;i+=4){
+    let gray=
+      .299*d[i]+.587*d[i+1]+.114*d[i+2];
+
+    if(mode==="contrast"){
+      gray=Math.max(
+        0,Math.min(255,(gray-128)*1.8+128)
+      );
+    }
+
+    if(mode==="binary"){
+      gray=gray>145?255:0;
+    }
+
+    d[i]=gray;
+    d[i+1]=gray;
+    d[i+2]=gray;
+  }
+
+  ctx.putImageData(image,0,0);
+  return canvas;
 }
+
+/* ===== OCR ===== */
 
 async function scanImage(input){
-const file=input.files?.[0];
-if(!file)return;
+  const file=input.files?.[0];
+  if(!file || processing) return;
 
-await stopScan();
+  if(!value("name")){
+    alert("Аввал номи маҳсулотро нависед.");
+    input.value="";
+    return;
+  }
 
-if(typeof Html5Qrcode==="undefined"){
-alert("Сканер дастрас нест.");
-return;
+  if(typeof Tesseract==="undefined"){
+    setStatus(
+      "OCR бор нашуд. Интернетро санҷед.",
+      "error"
+    );
+    return;
+  }
+
+  processing=true;
+  el("saveBtn").disabled=true;
+
+  if(imageURL) URL.revokeObjectURL(imageURL);
+  imageURL=URL.createObjectURL(file);
+
+  el("preview").src=imageURL;
+  el("preview").style.display="block";
+
+  setStatus("Сана хонда мешавад...");
+
+  let worker=null;
+
+  try{
+    const img=await loadImage(file);
+
+    worker=await Tesseract.createWorker("eng+rus");
+
+    const modes=["original","contrast","binary"];
+    const results=[];
+
+    for(let i=0;i<modes.length;i++){
+      setStatus(
+        "Санҷиши акс: "+(i+1)+" аз "+modes.length
+      );
+
+      const canvas=makeCanvas(img,modes[i]);
+      const result=await worker.recognize(canvas);
+      const text=result.data.text||"";
+
+      results.push({
+        text,
+        parsed:detectExpiry(text)
+      });
+
+      if(results[results.length-1].parsed.confident){
+        break;
+      }
+    }
+
+    el("ocrText").textContent=
+      results.map((r,i)=>
+        "Санҷиш "+(i+1)+":\n"+r.text
+      ).join("\n\n----------------\n\n");
+
+    const confident=results.find(
+      r=>r.parsed.confident
+    );
+
+    if(confident){
+      const date=confident.parsed.date;
+      el("expiry").value=date;
+
+      setStatus(
+        "Муҳлат ёфт шуд: "+date+
+        ". Сабт иҷро мешавад..."
+      );
+
+      const saved=saveProduct(true);
+
+      if(saved){
+        setStatus(
+          "✅ Муҳлат "+date+
+          " хонда ва худкор дар анбор сабт шуд!"
+        );
+      }
+    }else{
+      const dates=[...new Set(
+        results.flatMap(r=>
+          extractDates(r.text).map(x=>x.date)
+        )
+      )];
+
+      if(dates.length===1){
+        el("expiry").value=dates[0];
+        setStatus(
+          "Сана ёфт шуд: "+dates[0]+
+          ". EXP тасдиқ нашуд. Пеш аз сабт санҷед.",
+          "warn"
+        );
+      }else{
+        setStatus(
+          "Муҳлати боэътимод ёфт нашуд. "+
+          "Танҳо қисми санаи EXP-ро акс гиред.",
+          "error"
+        );
+      }
+    }
+
+  }catch(e){
+    setStatus(
+      "Хатои хондани акс: "+e.message,
+      "error"
+    );
+  }finally{
+    try{
+      await worker?.terminate();
+    }catch(e){}
+
+    processing=false;
+    el("saveBtn").disabled=false;
+    input.value="";
+  }
 }
 
-let temp=null;
+/* ===== SAVE ===== */
 
-try{
-temp=new Html5Qrcode("reader");
-const code=await temp.scanFile(file,true);
-el("barcode").value=code;
-await findName();
-}catch(e){
-el("scanStatus").textContent="Штрихкод хонда нашуд. Акси равшантар гиред.";
-}finally{
-try{await temp?.clear()}catch(e){}
-input.value="";
-}
-}
+function saveProduct(automatic=false){
+  const name=value("name");
+  const barcode=value("barcode");
+  const branch=value("branch");
+  const expiry=value("expiry");
 
-async function findName(){
-const code=val("barcode");
+  const qty=Number(value("qty"));
+  const price=Number(value("price"));
 
-if(!code){
-alert("Штрихкодро ворид кунед.");
-return;
-}
+  if(!name){
+    if(!automatic) alert("Номи маҳсулотро ворид кунед.");
+    return false;
+  }
 
-const known=data.find(p=>p.barcode===code);
+  if(!expiry){
+    if(!automatic) alert("Муҳлатро ворид кунед.");
+    return false;
+  }
 
-if(known){
-el("name").value=known.name;
-el("price").value=known.price;
-el("daily").value=known.daily;
-el("scanStatus").textContent="Ном аз анбор ёфт шуд: "+known.name;
-return;
-}
+  if(!Number.isInteger(qty)||qty<1){
+    alert("Миқдорро дуруст ворид кунед.");
+    return false;
+  }
 
-el("scanStatus").textContent="Ҷустуҷӯи номи маҳсулот...";
+  if(!Number.isFinite(price)||price<0){
+    alert("Нархро дуруст ворид кунед.");
+    return false;
+  }
 
-try{
-const controller=new AbortController();
-const timer=setTimeout(()=>controller.abort(),8000);
+  const days=daysUntil(expiry);
 
-let response;
-try{
-response=await fetch(
-"https://world.openfoodfacts.org/api/v2/product/"+
-encodeURIComponent(code)+".json",
-{signal:controller.signal}
-);
-}finally{
-clearTimeout(timer);
-}
+  if(days<0 && automatic){
+    setStatus(
+      "Муҳлат гузаштааст. Сабти худкор қатъ шуд.",
+      "error"
+    );
+    return false;
+  }
 
-if(!response.ok)throw Error("HTTP");
+  if(days<0 && !automatic){
+    if(!confirm(
+      "Муҳлати маҳсулот гузаштааст. "+
+      "Ҳамчун маҳсулоти муҳлатгузашта сабт шавад?"
+    )) return false;
+  }
 
-const result=await response.json();
-const name=result.product?.product_name||
-result.product?.product_name_ru||
-result.product?.product_name_en;
+  const old=inventory.find(p=>
+    p.name===name &&
+    p.barcode===barcode &&
+    p.branch===branch &&
+    p.expiry===expiry
+  );
 
-if(result.status===1&&name){
-el("name").value=name;
-el("scanStatus").textContent="Ном ёфт шуд: "+name;
-}else{
-el("scanStatus").textContent="Ном ёфт нашуд. Дастӣ нависед.";
-}
-}catch(e){
-el("scanStatus").textContent="Ҷустуҷӯ дастрас нест. Номро дастӣ ворид кунед.";
-}
-}
+  if(old){
+    old.qty+=qty;
+    old.price=price;
+  }else{
+    inventory.push({
+      id:window.crypto?.randomUUID
+        ?crypto.randomUUID()
+        :String(Date.now())+Math.random(),
+      name,
+      barcode,
+      branch,
+      expiry,
+      qty,
+      price,
+      createdAt:new Date().toISOString()
+    });
+  }
 
-/* IMPROVED DATE OCR */
+  if(!saveStorage()) return false;
 
-function validISO(y,m,d){
-y=Number(y);
-m=Number(m);
-d=Number(d);
+  render();
 
-if(y<100)y+=2000;
+  if(!automatic){
+    setStatus("✅ Маҳсулот сабт шуд!");
+  }
 
-const date=new Date(y,m-1,d);
-
-if(
-y<2000||y>2100||
-date.getFullYear()!==y||
-date.getMonth()!==m-1||
-date.getDate()!==d
-)return null;
-
-return String(y).padStart(4,"0")+"-"+
-String(m).padStart(2,"0")+"-"+
-String(d).padStart(2,"0");
+  return true;
 }
 
-function normalizeOCR(text){
-return text
-.replace(/[：]/g,":")
-.replace(/[，]/g,".")
-.replace(/[–—]/g,"-")
-.replace(/(\d)[OoОо](\d)/g,"$10$2")
-.replace(/(\d)[Il|](\d)/g,"$11$2");
+function saveManual(){
+  saveProduct(false);
 }
 
-function findDates(text){
-const cleaned=normalizeOCR(text);
-const found=[];
+function resetScan(){
+  ["name","barcode","expiry"].forEach(
+    id=>el(id).value=""
+  );
 
-const dmy=/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/g;
+  el("qty").value=1;
+  el("price").value=0;
 
-for(const m of cleaned.matchAll(dmy)){
-const date=validISO(m[3],m[2],m[1]);
-if(date)found.push({date,index:m.index});
+  el("preview").style.display="none";
+  el("ocrText").textContent="Ҳоло матн нест.";
+
+  if(imageURL){
+    URL.revokeObjectURL(imageURL);
+    imageURL=null;
+  }
+
+  setStatus("Барои скани нав омода аст.");
 }
 
-const ymd=/\b(20\d{2})[.\/-](\d{1,2})[.\/-](\d{1,2})\b/g;
+/* ===== INVENTORY ===== */
 
-for(const m of cleaned.matchAll(ymd)){
-const date=validISO(m[1],m[2],m[3]);
-if(date)found.push({date,index:m.index});
+function daysUntil(iso){
+  const d=new Date(iso+"T00:00:00");
+  const now=new Date();
+  now.setHours(0,0,0,0);
+
+  return Math.round((d-now)/86400000);
 }
 
-return found.sort((a,b)=>a.index-b.index);
+function status(p){
+  const days=daysUntil(p.expiry);
+
+  if(days<0){
+    return '<span class="badge bad">Гузашта</span>';
+  }
+
+  if(days===0){
+    return '<span class="badge bad">Имрӯз</span>';
+  }
+
+  if(days<=7){
+    return '<span class="badge warn">'+days+' рӯз</span>';
+  }
+
+  return '<span class="badge">Муқаррарӣ</span>';
 }
 
-async function prepareImage(file,enhance=false){
-const bitmap=await createImageBitmap(file);
+function deleteProduct(id){
+  if(!confirm("Маҳсулот ҳазф шавад?")) return;
 
-const maxWidth=2000;
-const scale=Math.min(3,maxWidth/bitmap.width);
-
-const canvas=document.createElement("canvas");
-canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-
-const ctx=canvas.getContext("2d",{willReadFrequently:true});
-
-ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-bitmap.close();
-
-if(enhance){
-const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-const p=img.data;
-
-for(let i=0;i<p.length;i+=4){
-const gray=p[i]*.299+p[i+1]*.587+p[i+2]*.114;
-const value=Math.max(0,Math.min(255,(gray-128)*1.7+128));
-p[i]=value;
-p[i+1]=value;
-p[i+2]=value;
-}
-ctx.putImageData(img,0,0);
-}
-
-return canvas;
-}
-
-function showDateChoices(dates){
-const box=el("dateChoices");
-box.innerHTML="";
-
-for(const date of dates){
-const group=document.createElement("div");
-group.className="item";
-
-const label=document.createElement("div");
-label.textContent=date;
-label.style.fontWeight="700";
-
-const madeButton=document.createElement("button");
-madeButton.textContent="Истеҳсол";
-madeButton.onclick=()=>el("made").value=date;
-
-const expiryButton=document.createElement("button");
-expiryButton.textContent="Анҷоми муҳлат";
-expiryButton.onclick=()=>el("until").value=date;
-
-group.append(label,madeButton,expiryButton);
-box.appendChild(group);
-}
-}
-
-async function readDates(input){
-const file=input.files?.[0];
-if(!file)return;
-
-const status=el("ocrStatus");
-const output=el("ocrText");
-
-if(typeof Tesseract==="undefined"){
-status.textContent="OCR бор нашуд. Интернетро санҷед.";
-return;
-}
-
-status.textContent="Омодасозии акс...";
-output.textContent="Лутфан интизор шавед...";
-el("dateChoices").innerHTML="";
-
-let worker=null;
-
-try{
-worker=await Tesseract.createWorker("eng");
-
-let text="";
-let found=[];
-
-for(let attempt=0;attempt<2;attempt++){
-status.textContent=attempt===0
-?"Хондани акс — марҳилаи 1..."
-:"Беҳтар кардани акс — марҳилаи 2...";
-
-const canvas=await prepareImage(file,attempt===1);
-const result=await worker.recognize(canvas);
-const part=result.data.text||"";
-
-text+="\n"+part;
-found=findDates(text);
-
-if(found.length>=2)break;
-}
-
-output.textContent=text.trim()||"Матн ёфт нашуд.";
-
-const unique=[...new Set(found.map(x=>x.date))].sort();
-
-showDateChoices(unique);
-
-let made=null;
-let expiry=null;
-
-for(const line of text.split("\n")){
-const matches=findDates(line);
-if(!matches.length)continue;
-
-if(/MFG|MFD|PROD|ИЗГОТ|ИСТЕҲСОЛ/i.test(line)){
-made=matches[0].date;
-}
-
-if(/EXP|BEST BEFORE|USE BY|ГОДЕН|СРОК|МУҲЛАТ/i.test(line)){
-expiry=matches[matches.length-1].date;
-}
-}
-
-if(!made&&!expiry&&unique.length===2){
-made=unique[0];
-expiry=unique[1];
-}
-
-if(made)el("made").value=made;
-if(expiry)el("until").value=expiry;
-
-if(unique.length>=2){
-status.textContent="Санаҳо ёфт шуданд. Майдонҳоро санҷед.";
-}else if(unique.length===1){
-status.textContent="Як сана ёфт шуд: "+unique[0]+". Интихоб кунед, ки кадом сана аст.";
-}else{
-status.textContent="Сана ёфт нашуд. Акси наздиктар, равшантар ва бе соя гиред.";
-}
-
-}catch(e){
-status.textContent="Хатои OCR: "+e.message;
-}finally{
-try{await worker?.terminate()}catch(e){}
-input.value="";
-}
-}
-
-/* INVENTORY */
-
-function save(){
-const barcode=val("barcode");
-const name=val("name");
-const branch=val("branch");
-const qty=Number(val("qty"));
-const price=Number(val("price"));
-const daily=Number(val("daily"));
-const made=val("made");
-const until=val("until");
-
-if(!barcode||!name||!made||!until){
-alert("Штрихкод, ном ва ҳар ду санаро пур кунед.");
-return;
-}
-
-if(
-!Number.isInteger(qty)||qty<=0||
-!Number.isFinite(price)||price<0||
-!Number.isFinite(daily)||daily<0
-){
-alert("Миқдор, нарх ё фурӯши рӯзона нодуруст аст.");
-return;
-}
-
-if(made>until){
-alert("Санаи истеҳсол аз муҳлат дертар аст.");
-return;
-}
-
-if(days(until)<0&&!confirm("Муҳлати маҳсулот гузаштааст. Сабт шавад?")){
-return;
-}
-
-const old=data.find(p=>
-p.barcode===barcode&&
-p.branch===branch&&
-p.made===made&&
-p.until===until
-);
-
-if(old){
-old.qty+=qty;
-old.name=name;
-old.price=price;
-old.daily=daily;
-}else{
-data.push({
-id:String(Date.now())+Math.random(),
-barcode,name,branch,qty,price,daily,
-made,until,discount:0
-});
-}
-
-if(!store())return;
-
-clearForm();
-render();
-alert("Маҳсулот дар анбор сабт шуд!");
-go("inventory");
-}
-
-function clearForm(){
-["barcode","name","made","until"].forEach(id=>el(id).value="");
-el("qty").value=1;
-el("price").value=0;
-el("daily").value=0;
-el("scanStatus").textContent="Барои скан омода аст.";
-el("ocrStatus").textContent="Барои хондани сана омода аст.";
-el("ocrText").textContent="Натиҷаи OCR дар ин ҷо пайдо мешавад.";
-el("dateChoices").innerHTML="";
-}
-
-function removeItem(id){
-if(!confirm("Маҳсулот ҳазф шавад?"))return;
-data=data.filter(p=>p.id!==id);
-store();
-render();
-}
-
-function suggestion(p){
-const n=days(p.until);
-if(n===null||n<0)return 0;
-return n<=3?30:n<=7?20:n<=14?10:0;
-}
-
-function approve(id){
-const p=data.find(x=>x.id===id);
-if(!p)return;
-
-const s=suggestion(p);
-if(!s)return;
-
-if(confirm("Тахфифи "+s+"% тасдиқ шавад?")){
-p.discount=s;
-store();
-render();
-}
+  inventory=inventory.filter(p=>p.id!==id);
+  saveStorage();
+  render();
 }
 
 function render(){
-el("count").textContent=data.length;
-el("quantity").textContent=data.reduce((s,p)=>s+p.qty,0);
+  el("total").textContent=inventory.length;
 
-el("near").textContent=data.filter(p=>{
-const n=days(p.until);
-return n!==null&&n>=0&&n<=14;
-}).length;
+  el("near").textContent=inventory.filter(p=>{
+    const d=daysUntil(p.expiry);
+    return d>=0&&d<=7;
+  }).length;
 
-el("expired").textContent=data.filter(p=>days(p.until)<0).length;
+  el("expired").textContent=inventory.filter(
+    p=>daysUntil(p.expiry)<0
+  ).length;
 
-el("risk").textContent=data.filter(p=>{
-const n=days(p.until);
-return n!==null&&n<=7;
-}).reduce((s,p)=>s+p.qty*p.price,0).toFixed(2)+" сомонӣ";
+  el("inventoryBody").innerHTML=
+    inventory.map(p=>`
+      <tr>
+        <td>${escapeHTML(p.name)}</td>
+        <td>${escapeHTML(p.expiry)}</td>
+        <td>${p.qty}</td>
+        <td>${escapeHTML(p.branch)}</td>
+        <td>${status(p)}</td>
+        <td>
+          <button class="btn red"
+            onclick="deleteProduct('${p.id}')">
+            Ҳазф
+          </button>
+        </td>
+      </tr>
+    `).join("") ||
+    '<tr><td colspan="6">Анбор холӣ аст.</td></tr>';
 
-el("alerts").innerHTML=data.filter(p=>{
-const n=days(p.until);
-return n!==null&&n<=7;
-}).map(p=>
-'<div class="item"><b>'+esc(p.name)+'</b> — <span class="bad">'+esc(state(p)[0])+'</span></div>'
-).join("")||"Огоҳӣ нест.";
+  const alerts=[...inventory].sort(
+    (a,b)=>a.expiry.localeCompare(b.expiry)
+  );
 
-const q=val("search").toLowerCase();
-
-el("rows").innerHTML=data.filter(p=>
-p.name.toLowerCase().includes(q)||p.barcode.includes(q)
-).map(p=>
-'<tr><td>'+esc(p.name)+'</td><td>'+esc(p.barcode)+'</td><td>'+esc(p.branch)+'</td><td>'+p.qty+'</td><td>'+esc(p.made)+'</td><td>'+esc(p.until)+'</td><td><button class="btn danger" onclick="removeItem(\''+p.id+'\')">Ҳазф</button></td></tr>'
-).join("")||'<tr><td colspan="7">Анбор холӣ аст.</td></tr>';
-
-el("expiryList").innerHTML=[...data]
-.sort((a,b)=>a.until.localeCompare(b.until))
-.map(p=>{
-const st=state(p);
-return '<div class="item"><b>'+esc(p.name)+'</b> — '+p.qty+' дона • <span class="'+st[1]+'">'+esc(st[0])+'</span><div class="muted">Муҳлат: '+esc(p.until)+'</div></div>';
-}).join("")||"Маҳсулот нест.";
-
-el("discountList").innerHTML=data
-.filter(p=>suggestion(p)>0)
-.map(p=>{
-const s=suggestion(p);
-return '<div class="item"><b>'+esc(p.name)+'</b><p>Тахфиф: '+s+'% • Нархи нав: '+(p.price*(1-s/100)).toFixed(2)+' сомонӣ</p><p class="muted">Тасдиқшуда: '+(p.discount||0)+'%</p><button class="btn" onclick="approve(\''+p.id+'\')">Тасдиқ</button></div>';
-}).join("")||"Пешниҳоди тахфиф нест.";
-
-el("forecastList").innerHTML=data.map(p=>{
-const need=Math.ceil(p.daily*7);
-return '<div class="item"><b>'+esc(p.name)+'</b><p>Талаботи 7 рӯз: '+need+' дона • Захира: '+p.qty+' дона • Камбудӣ: '+Math.max(0,need-p.qty)+' дона</p></div>';
-}).join("")||"Барои пешгӯӣ маҳсулот сабт кунед.";
+  el("alertsList").innerHTML=
+    alerts.map(p=>`
+      <div class="item">
+        <div class="row">
+          <b>${escapeHTML(p.name)}</b>
+          ${status(p)}
+        </div>
+        <p>Муҳлат: ${escapeHTML(p.expiry)}</p>
+        <p class="muted">
+          ${p.qty} дона • ${escapeHTML(p.branch)}
+        </p>
+      </div>
+    `).join("") ||
+    '<p>Маҳсулот нест.</p>';
 }
 
 function exportCSV(){
-const rows=[
-["Barcode","Name","Branch","Qty","Price","Daily","Made","Expiry","Discount"],
-...data.map(p=>[
-p.barcode,p.name,p.branch,p.qty,p.price,p.daily,
-p.made,p.until,p.discount
-])
-];
+  const rows=[
+    ["Name","Barcode","Branch","Expiry","Qty","Price"],
+    ...inventory.map(p=>[
+      p.name,p.barcode,p.branch,
+      p.expiry,p.qty,p.price
+    ])
+  ];
 
-const csv=rows.map(r=>
-r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(",")
-).join("\r\n");
+  const csv=rows.map(r=>
+    r.map(v=>'"'+String(v).replaceAll('"','""')+'"')
+      .join(",")
+  ).join("\r\n");
 
-const blob=new Blob(["\uFEFF"+csv],{
-type:"text/csv;charset=utf-8"
-});
+  const blob=new Blob(
+    ["\uFEFF"+csv],
+    {type:"text/csv;charset=utf-8"}
+  );
 
-const url=URL.createObjectURL(blob);
-const a=document.createElement("a");
-a.href=url;
-a.download="yovar-inventory.csv";
-a.click();
-setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="yovar-expiry.csv";
+  a.click();
+
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-
-document.addEventListener("visibilitychange",()=>{
-if(document.hidden)stopScan();
-});
 
 render();
 </script>
